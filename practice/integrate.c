@@ -29,19 +29,20 @@ int main(void)
   scanf("%lf",&n);
   printf("何秒観測してますか？(double): ");
   scanf("%lf",&len);
-  printf("test"); 
   
   //積分の配列に入れるポイント数を定義
   int p = ceil(sec*n);
   //合計ポイント数を定義
   int N = ceil(len*n);
   //ループ処理回数
-  int loop = floor(N/p);
+  //int loop = floor(N/p);
+  int loop = 0;
   //配列を定義。p個分観測データを入れる
   double y[p+1];
   double data[N+1];
 
   //読み込みファイルを開く
+  /**
   fp = fopen( inputfname, "r" );
   if( fp == NULL ){
     printf( "%sファイルが開けません¥n", inputfname );
@@ -52,6 +53,9 @@ int main(void)
     data[i] = tmp;
     i = i + 1;
   }
+  **/
+  //読み込み終了
+  //fclose( fp );
   
   //書き込みファイルを開く
   fp = fopen( outputfname, "w" );
@@ -64,7 +68,8 @@ int main(void)
     //この辺はシンプソン公式通り
     for(i=0; i<=p; i++)
     {
-      y[i]=data[i+(p+1)*j];
+      //y[i]=data[i+(p+1)*j];
+      y[i]=1;
     }
     for(i=1; i<=p-1;i+=2)
     {
