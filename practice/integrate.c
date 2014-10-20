@@ -1,4 +1,4 @@
-//シンプソン公式利用
+//シンプソン公式使って積分の精度上げてます。参考URL
 //http://www.opt.utsunomiya-u.ac.jp/~yatagai/Lectures/jouhou/Chap6.htm
 
 #include <stdio.h>
