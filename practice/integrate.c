@@ -6,9 +6,10 @@
 
 int main(void)
 {
-  int i, j;
+  int i, j, ret;
   double tmp;
   FILE *fp;
+  FILE *fp1;
   char *inputfname = "data.csv";
   char *outputfname = "integrate.csv";
   
@@ -25,7 +26,7 @@ int main(void)
   scanf("%lf",&sec);
   printf("毎秒何ポイント観測してますか？(double): ");
   scanf("%lf",&n);
-  printf("何秒観測してますか？(double): ");
+  printf("何秒分の観測データですか？(double): ");
   scanf("%lf",&len);
   
   //積分の配列に入れるポイント数を定義
@@ -39,20 +40,24 @@ int main(void)
   double data[N+1];
 
   //読み込みファイルを開く
-  /**
-  fp = fopen( inputfname, "r" );
-  if( fp == NULL ){
-    printf( "%sファイルが開けません¥n", inputfname );
+  fp1 = fopen( inputfname, "r" );
+  if( fp1 == NULL ){
+    printf( "%sファイルが開けません\n", inputfname );
     return -1;
   }
-  i = 0;
-  while(( tmp = fscanf( fp, "%lf", &tmp )) != EOF ){
-    data[i] = tmp;
+  for(i=0;i<N;i++) {
+    fscanf(fp1, "%lf", &data[i]);
+  }
+  /**
+  while(( ret = fscanf( fp1, "%lf", &tmp )) != EOF ){
+    printf("%lf\n",tmp);
+    printf("%d\n",i);
+    //data[i] = tmp;
     i = i + 1;
   }
-  //読み込み終了
-  fclose( fp );
   **/
+  //読み込み終了
+  fclose( fp1 );
 
   //書き込みファイルを開く
   fp = fopen( outputfname, "w" );
@@ -68,8 +73,7 @@ int main(void)
     //この辺はシンプソン公式通り
     for(i=0; i<=p; i++)
     {
-      //y[i]=data[i+(p+1)*j];
-      y[i]=1;
+      y[i]=data[i+(p+1)*j];
     }
     for(i=1; i<=p-1;i+=2)
     {
@@ -81,10 +85,10 @@ int main(void)
     }
     s=(y[0]+4.0*s1+2.0*s2+y[p])/n/3.0;
     
-    printf("Intergral : %f\n",s);
+    printf("Intergral : %lf(%lfs)\n", s, (p+1)*j/n);
     
     //csvファイルに書き込み
-    fprintf( fp, "%f\n", s);
+    fprintf( fp, "%lf\n", s);
   }
   //編集終了
   fclose( fp );
