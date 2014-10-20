@@ -6,16 +6,14 @@
 
 int main(void)
 {
-  int i, j, ret;
-  float tmp;
+  int i, j;
+  double tmp;
   FILE *fp;
   char *inputfname = "data.csv";
   char *outputfname = "integrate.csv";
   
   //シンプソン公式のためのsを定義
   double s,s1,s2;
-  //初期化
-  s=0.0; s1=0.0; s2=0.0;
   
   //何秒積分か入力
   double sec;
@@ -35,8 +33,7 @@ int main(void)
   //合計ポイント数を定義
   int N = ceil(len*n);
   //ループ処理回数
-  //int loop = floor(N/p);
-  int loop = 0;
+  int loop = floor(N/p);
   //配列を定義。p個分観測データを入れる
   double y[p+1];
   double data[N+1];
@@ -49,14 +46,14 @@ int main(void)
     return -1;
   }
   i = 0;
-  while(( ret = fscanf( fp, "%f", &tmp )) != EOF ){
+  while(( tmp = fscanf( fp, "%lf", &tmp )) != EOF ){
     data[i] = tmp;
     i = i + 1;
   }
-  **/
   //読み込み終了
-  //fclose( fp );
-  
+  fclose( fp );
+  **/
+
   //書き込みファイルを開く
   fp = fopen( outputfname, "w" );
   if( fp == NULL ){
@@ -65,6 +62,9 @@ int main(void)
   }
   
   for(j=0; j<=loop; j++){
+    //初期化
+    s=0.0; s1=0.0; s2=0.0;
+    
     //この辺はシンプソン公式通り
     for(i=0; i<=p; i++)
     {
