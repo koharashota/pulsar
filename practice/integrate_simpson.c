@@ -1,3 +1,6 @@
+//シンプソン公式使って積分の精度上げてます。参考URL
+//http://www.opt.utsunomiya-u.ac.jp/~yatagai/Lectures/jouhou/Chap6.htm
+
 #include <stdio.h>
 #include <math.h>
 
@@ -10,8 +13,8 @@ int main(void)
   char *inputfname = "data.csv";
   char *outputfname = "integrate.csv";
   
-  //合計値をいれる
-  double s;
+  //シンプソン公式のためのsを定義
+  double s,s1,s2;
   
   //何秒積分か入力
   double sec;
@@ -45,6 +48,14 @@ int main(void)
   for(i=0;i<N;i++) {
     fscanf(fp1, "%lf", &data[i]);
   }
+  /**
+  while(( ret = fscanf( fp1, "%lf", &tmp )) != EOF ){
+    printf("%lf\n",tmp);
+    printf("%d\n",i);
+    //data[i] = tmp;
+    i = i + 1;
+  }
+  **/
   //読み込み終了
   fclose( fp1 );
 
@@ -55,21 +66,29 @@ int main(void)
     return -1;
   }
   
-  for(j=0; j < loop; j++){
+  for(j=0; j<=loop; j++){
     //初期化
-    s=0.0;
+    s=0.0; s1=0.0; s2=0.0;
     
-    //printf("%d\n",p*j);
-
     //この辺はシンプソン公式通り
-    for(i=0; i < p; i++)
+    for(i=0; i<=p; i++)
     {
-      s+=data[i+p*j];
+      y[i]=data[i+(p+1)*j];
     }
-    printf("Intergral : %lf(%lfs)\n", s/n, (p)*(j+1)/n);
+    for(i=1; i<=p-1;i+=2)
+    {
+      s1+=y[i];
+    }
+    for(i=2;i<=p-2;i+=2)
+    {
+      s2+=y[i];
+    }
+    s=(y[0]+4.0*s1+2.0*s2+y[p])/n/3.0;
+    
+    printf("Intergral : %lf(%lfs)\n", s, (p+1)*j/n);
     
     //csvファイルに書き込み
-    fprintf( fp, "%lf\n", s/n);
+    fprintf( fp, "%lf\n", s);
   }
   //編集終了
   fclose( fp );
