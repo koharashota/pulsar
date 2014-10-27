@@ -17,7 +17,7 @@
 #include "../cuda_by_example/common/book.h"
 #include <time.h>
 
-#define N  100
+#define N 10000
 
 __global__ void add( int *a, int *b, int *c ) {
     int tid = blockIdx.x;    // this thread handles the data at its thread id
@@ -68,6 +68,6 @@ int main( void ) {
     end = clock();
     printf( "終了時間:%d\n", end );
     printf( "処理時間:%d[ms]\n", end - start );
-
+    printf("%.2f秒かかりました\n",(double)(end-start)/CLOCKS_PER_SEC);
     return 0;
 }
