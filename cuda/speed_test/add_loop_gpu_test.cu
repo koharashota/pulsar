@@ -14,20 +14,24 @@
  */
 
 
-#include "../common/book.h"
+#include "../cuda_by_example/common/book.h"
+#include <time.h>
 
-#define N   100000
+#define N  100
 
 __global__ void add( int *a, int *b, int *c ) {
     int tid = blockIdx.x;    // this thread handles the data at its thread id
     if (tid < N)
-        c[tid] = a[tid] + b[tid];
+        c[tid] = a[tid] * b[tid];
 }
 
 int main( void ) {
+    clock_t start, end;
     int a[N], b[N], c[N];
     int *dev_a, *dev_b, *dev_c;
-
+    start = clock();
+    printf( "開始時間:%d¥n", start ); 
+    
     // allocate the memory on the GPU
     HANDLE_ERROR( cudaMalloc( (void**)&dev_a, N * sizeof(int) ) );
     HANDLE_ERROR( cudaMalloc( (void**)&dev_b, N * sizeof(int) ) );
@@ -60,6 +64,10 @@ int main( void ) {
     HANDLE_ERROR( cudaFree( dev_a ) );
     HANDLE_ERROR( cudaFree( dev_b ) );
     HANDLE_ERROR( cudaFree( dev_c ) );
+    
+    end = clock();
+    printf( "終了時間:%d\n", end );
+    printf( "処理時間:%d[ms]\n", end - start );
 
     return 0;
 }

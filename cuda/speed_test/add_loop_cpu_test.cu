@@ -14,20 +14,24 @@
  */
 
 
-#include "../common/book.h"
+#include "../cuda_by_example/common/book.h"
+#include <time.h>
 
-#define N   10000
+#define N 100
 
 void add( int *a, int *b, int *c ) {
     int tid = 0;    // this is CPU zero, so we start at zero
     while (tid < N) {
-        c[tid] = a[tid] + b[tid];
+        c[tid] = a[tid] * b[tid];
         tid += 1;   // we have one CPU, so we increment by one
     }
 }
 
 int main( void ) {
+    clock_t start, end;
     int a[N], b[N], c[N];
+    start = clock();
+    printf( "開始時間:%d\n", start ); 
 
     // fill the arrays 'a' and 'b' on the CPU
     for (int i=0; i<N; i++) {
@@ -41,6 +45,10 @@ int main( void ) {
     for (int i=0; i<N; i++) {
         printf( "%d + %d = %d\n", a[i], b[i], c[i] );
     }
+
+    end = clock();
+    printf( "終了時間:%d\n", end );
+    printf( "処理時間:%d[ms]\n", end - start );
 
     return 0;
 }
