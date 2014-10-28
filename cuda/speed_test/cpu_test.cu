@@ -17,7 +17,8 @@
 #include "../cuda_by_example/common/book.h"
 #include <time.h>
 
-#define N 1000000
+#define N 10000
+#define M 10000
 
 void add( int *a, int *b, int *c ) {
     int tid = 0;    // this is CPU zero, so we start at zero
@@ -31,16 +32,17 @@ int main( void ) {
     clock_t start, end;
     int a[N], b[N], c[N];
     start = clock();
-
-    // fill the arrays 'a' and 'b' on the CPU
-    for (int i=0; i<N; i++) {
-        a[i] = -i;
-        b[i] = i * i;
+    
+    for(int j=0; j<M;j++) {
+      // fill the arrays 'a' and 'b' on the CPU
+      for (int i=j; i<N; i++) {
+          a[i] = -i;
+          b[i] = i * i;
+      }
+      add( a, b, c );
+      // display the results
     }
-
-    add( a, b, c );
-
-    // display the results
+    
     for (int i=0; i<N; i++) {
         printf( "%d + %d = %d\n", a[i], b[i], c[i] );
     }
