@@ -17,9 +17,9 @@
 #include "../cuda_by_example/common/book.h"
 #include <time.h>
 
-#define N 10000
-#define M 10000
-
+#define N 100000
+#define M 1000
+/**
 void add( int *a, int *b, int *c ) {
     int tid = 0;    // this is CPU zero, so we start at zero
     while (tid < N) {
@@ -27,26 +27,24 @@ void add( int *a, int *b, int *c ) {
         tid += 1;   // we have one CPU, so we increment by one
     }
 }
+**/
 
 int main( void ) {
     clock_t start, end;
-    int a[N], b[N], c[N];
+    float a[N], b[N], c[N];
+    int i,j;
     start = clock();
     
-    for(int j=0; j<M;j++) {
-      // fill the arrays 'a' and 'b' on the CPU
-      for (int i=j; i<N; i++) {
-          a[i] = -i;
-          b[i] = i * i;
+    for(j=0; j<M;j++) {
+      for (i=0; i<N; i++) {
+        a[i] =  (i+j*N);
+        b[i] =  (i+j);
+        c[i] =  a[i] / b[i];
+        if (i==230){
+          printf( "%f / %f = %lf\n", a[i], b[i], c[i] );
+        }
       }
-      add( a, b, c );
-      // display the results
     }
-    
-    for (int i=0; i<N; i++) {
-        printf( "%d + %d = %d\n", a[i], b[i], c[i] );
-    }
-
     end = clock();
     printf("%.2f秒かかりました\n",(double)(end-start)/CLOCKS_PER_SEC);
     return 0;
