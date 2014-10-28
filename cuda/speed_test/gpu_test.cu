@@ -30,7 +30,6 @@ int main( void ) {
     int a[N], b[N], c[N];
     int *dev_a, *dev_b, *dev_c;
     start = clock();
-    printf( "開始時間:%d¥n", start ); 
     
     // allocate the memory on the GPU
     HANDLE_ERROR( cudaMalloc( (void**)&dev_a, N * sizeof(int) ) );
@@ -66,8 +65,6 @@ int main( void ) {
     HANDLE_ERROR( cudaFree( dev_c ) );
     
     end = clock();
-    printf( "終了時間:%d\n", end );
-    printf( "処理時間:%d[ms]\n", end - start );
     printf("%.2f秒かかりました\n",(double)(end-start)/CLOCKS_PER_SEC);
     return 0;
 }
