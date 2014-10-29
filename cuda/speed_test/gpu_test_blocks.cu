@@ -21,9 +21,11 @@
 #define M 1000
 
 __global__ void add( float *a, float *b, float *c ) {
-    int tid = blockIdx.x;    // this thread handles the data at its thread id
+    //int tid = threadIdx.x;    // this thread handles the data at its thread id
+    int tid = threadIdx.x+blockIdx.x*blockDim.x;    // this thread handles the data at its thread id
     if (tid < N)
         c[tid] = a[tid] / b[tid];
+        tid += blockIdx.x*blockDim.x;
 }
 
 int main( void ) {
@@ -56,7 +58,7 @@ int main( void ) {
       HANDLE_ERROR( cudaMemcpy( dev_b, b, N * sizeof(float),
                                 cudaMemcpyHostToDevice ) );
 
-      add<<<N,1>>>( dev_a, dev_b, dev_c );
+      add<<<(N+127)/128,128>>>( dev_a, dev_b, dev_c );
 
       // copy the array 'c' back from the GPU to the CPU
       HANDLE_ERROR( cudaMemcpy( c, dev_c, N * sizeof(float),
