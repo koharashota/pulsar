@@ -23,7 +23,11 @@
 __global__ void add( float *a, float *b, float *c ) {
     int tid = blockIdx.x;    // this thread handles the data at its thread id
     if (tid < N)
-        c[tid] = a[tid] / b[tid];
+        c[tid] = (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid] +  (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid];
+        c[tid] += (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid] +  (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid];
+        c[tid] += (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid] +  (a[tid] / b[tid] + 120)*a[tid]/b[tid] + (a[tid] / b[tid] + 120)*a[tid]/b[tid];
+        c[tid] = c[tid]/N/N;
+        //c[tid] = a[tid] / b[tid];
 }
 
 int main( void ) {
@@ -33,16 +37,17 @@ int main( void ) {
     float *dev_a, *dev_b, *dev_c;
     start = clock();
     
-    // allocate the memory on the GPU
-    HANDLE_ERROR( cudaMalloc( (void**)&dev_a, N * sizeof(float)) );
-    HANDLE_ERROR( cudaMalloc( (void**)&dev_b, N * sizeof(float)) );
-    HANDLE_ERROR( cudaMalloc( (void**)&dev_c, N * sizeof(float)) );
 
 
     for(j=0; j<M;j++) {
+      // allocate the memory on the GPU
+      HANDLE_ERROR( cudaMalloc( (void**)&dev_a, 1 + j *N * sizeof(float)) );
+      HANDLE_ERROR( cudaMalloc( (void**)&dev_b, N * sizeof(float)) );
+      HANDLE_ERROR( cudaMalloc( (void**)&dev_c, N * sizeof(float)) );
+      
       // fill the arrays 'a' and 'b' on the CPU
       for (i=0; i<N; i++) {
-        a[i] =  (i+j);
+        a[i] =  (i+j*N);
         b[i] =  (i+j);
         if (j==230){
           //printf( "%f / %f = \n", a[i], b[i] );
@@ -51,7 +56,7 @@ int main( void ) {
       }
       
       // copy the arrays 'a' and 'b' to the GPU
-      HANDLE_ERROR( cudaMemcpy( dev_a, a, N * sizeof(float),
+      HANDLE_ERROR( cudaMemcpy( dev_a, a, 1 + j * N * sizeof(float),
                                 cudaMemcpyHostToDevice ) );
       HANDLE_ERROR( cudaMemcpy( dev_b, b, N * sizeof(float),
                                 cudaMemcpyHostToDevice ) );
@@ -59,10 +64,17 @@ int main( void ) {
       add<<<N,1>>>( dev_a, dev_b, dev_c );
 
       // copy the array 'c' back from the GPU to the CPU
-      HANDLE_ERROR( cudaMemcpy( c, dev_c, N * sizeof(float),
+      HANDLE_ERROR( cudaMemcpy( c, dev_c,   N * sizeof(float),
                                 cudaMemcpyDeviceToHost ) );
+      //if (j==230){
+        for (int i=0; i<N; i++) {
+          //printf( "%f + %f = %f\n", a[i], b[i], c[i] );
+          printf( "%f \n", c[i] );
+        }
+      //}
 
     }
+    
 
     // free the memory allocated on the GPU
     HANDLE_ERROR( cudaFree( dev_a ) );

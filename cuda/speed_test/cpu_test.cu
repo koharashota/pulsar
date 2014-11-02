@@ -39,7 +39,10 @@ int main( void ) {
       for (i=0; i<N; i++) {
         a[i] =  (i+j*N);
         b[i] =  (i+j);
-        c[i] =  a[i] / b[i];
+        c[i] =  (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] ;
+        c[i] +=  (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] ;
+        c[i] +=  (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] ;
+        //c[i] =  a[i] / b[i];
         if (i==230){
           printf( "%f / %f = %lf\n", a[i], b[i], c[i] );
         }
