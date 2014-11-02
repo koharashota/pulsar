@@ -6,10 +6,9 @@ const int N = 100 * 1024;
 //一分割毎のデータ数(=総データ数/時間毎の分割数)
 const int M =  100;
 
-
-
 //一度に使うスレッド数は512を超えないようにする
-const int threadsPerBlock = 256;
+const int threadsPerBlock = 500;
+//const int threadsPerBlock = 256;
 // 一度につかうブロック数は6,5535を超えないようにする
 const int blocksPerGrid =
             imin( 60000, (N+threadsPerBlock-1) / threadsPerBlock );
@@ -105,11 +104,12 @@ int main( void ) {
 
     // copy the array 'c' back from the GPU to the CPU
     HANDLE_ERROR( cudaMemcpy( S, dev_S,
-                              blocksPerGrid*sizeof(float),
+                              N*sizeof(float),
                               cudaMemcpyDeviceToHost ) );
 
     // finish up on the CPU side
-    for (int i=0; i<blocksPerGrid; i++) {
+    //for (int i=0; i<blocksPerGrid; i++) {
+    for (int i=0; i<N; i++) {
       printf( "時間%f, 強度%f, パワースペクトラム%f, 周波数%f\n", t[i], X[i], S[i], f[i]);
     }
 
