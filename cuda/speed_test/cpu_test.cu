@@ -17,8 +17,8 @@
 #include "../cuda_by_example/common/book.h"
 #include <time.h>
 
-#define N 100000
-#define M 1000
+#define N 50000
+#define M 10000
 /**
 void add( int *a, int *b, int *c ) {
     int tid = 0;    // this is CPU zero, so we start at zero
@@ -37,14 +37,15 @@ int main( void ) {
     
     for(j=0; j<M;j++) {
       for (i=0; i<N; i++) {
-        a[i] =  (i+j*N);
+        a[i] =  (i);
         b[i] =  (i+j);
         c[i] =  (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] ;
         c[i] +=  (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] ;
         c[i] +=  (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] + (a[i] / b[i] + 120)*a[i]/b[i] ;
+        c[i] = c[i]/N/N;
         //c[i] =  a[i] / b[i];
         if (i==230){
-          printf( "%f / %f = %lf\n", a[i], b[i], c[i] );
+          //printf( "%f / %f = %lf\n", a[i], b[i], c[i] );
         }
       }
     }
