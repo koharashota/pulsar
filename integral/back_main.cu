@@ -5,13 +5,17 @@
 // void time_series_integration_complex (const float integration_time_s, ta::FileInformation &fileinfo, ta::BinData &data, ta::Config &config, const path dest_dir)
 
 
+//argv[0] 実行ファイル名 argv[1] 観測データ argv[2] 設定ファイル config.txt?
+
 #include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <ctime>
 #include "Functions.h"
+//c++のライブラリを使ってディレクトリとかファイルパスの操作 fs
 #include "FileInformation.h"
+//データの項とかの説明
 #include "Config.h"
 #include "BinData.h"
 #include "Stats.h"
@@ -19,6 +23,8 @@
 #include <cuda.h>
 #include <cufft.h>
 #include <cuda_runtime.h>
+
+//c++のファイルやディレクトリを操作ライブラリ
 #include <boost/filesystem.hpp>
 
 #pragma comment(lib, "cudart")
@@ -59,19 +65,24 @@ int gnuplot(const char *data_filepath_char, const plot_range range, ta::Config &
 
 int main(int argc, char *argv[])
 {
+
+
 	bool flag_create_spectrogram_image = false;
 
 	try{
-		// Input File
+		// Input File の引数に誤りがあったらエラーをはく
 		if(argc != 3){
 			printf("Usage: %s <file> <confiig>\n", argv[0]);
 			throw "Invalid Arguments";
 		}
-		ta::FileInformation fileinfo (argv[1], '_');
+
+		//fs ファイル情報宣言
+    ta::FileInformation fileinfo (argv[1], '_');
 		printf ("Data:   %s\n", fileinfo.getFilePath().string().c_str());
 		printf ("Config: %s\n", path(argv[2]).string().c_str());	
 
 		// Observation Parameters
+    // config.txtで設定した情報を読み取って、定数を宣言
 		ta::Config config (argv[2]);
 		const bool   flag_complex_data   = true; //config.isComplexData(); // Data format: <Re><Re><Re>... or <Re><Im><Re><Im>...
 		const int    datum_bit_length_B  = config.getDatumBitLength_B(); // byte
@@ -82,28 +93,26 @@ int main(int argc, char *argv[])
 		const float  pulsar_w50_s        = config.getPulsarW50_s(); 
 
 
-		int tmp_num_entire_data_pt = fileinfo.getFilesize_B() / datum_bit_length_B;
+		//ファイルの項数と設定からデータ量を設定
+    int tmp_num_entire_data_pt = fileinfo.getFilesize_B() / datum_bit_length_B;
 		if (flag_complex_data == true){
 			tmp_num_entire_data_pt /= 2;
 		}
 		const int num_entire_data_pt = tmp_num_entire_data_pt;
 
-		// Data Handling Parameters
-		// データファイルは大容量なので、適当なデータサイズに分割して解析する。
-		// 規定の分割データサイズに満たないデータは読み捨てられるので、1ファイルの最後の方は解析されない。
-		// 無限に分割し続けるわけにはいかないので、最大分割数を設定する。
-		//int        tmp_partition_num = 0; // Division number of data points
-		//const int  max_partition_num = 1000; 
-
-		//int        tmp_num_partial_data = pow( 2.0, ceil(log(5.0 * pulsar_w50_s / sampling_interval_s)/log(2.0)) ); // points; データ数を2^mになるよう設定。パルス全幅の約5倍のデータをとる。
 		int tmp_num_partial_data = static_cast<int>(config.getPulsarP0_pt() * 5); // 分割データ内に少なくとも1つのパルスが入るように、分割データの点数を設定。
 		if (tmp_num_partial_data > num_entire_data_pt){ // ただし全データ数がそれに満たない場合、分割データ数を全データ数に設定。
 			tmp_num_partial_data = num_entire_data_pt;
 		}
+    //fft_window_width 一度にfftでさばくポイント数
 		const int   fft_window_width       = config.getFFTWindowWidth();
+    //fft_batch 一つの分割ファイルで行うfftの回数
 		const int   fft_batch              = std::floor(static_cast<float>(tmp_num_partial_data) / fft_window_width);
-		const int   num_partial_data       = fft_window_width * fft_batch;
+		//num_partial_data 一つの分割データのポイント数
+    const int   num_partial_data       = fft_window_width * fft_batch;
+		//num_partition データの分割数
 		const int   num_partition          = std::floor( static_cast<float>(num_entire_data_pt) / num_partial_data);
+		//skipped_data_size_pts 余ったデータ数
 		const int   skipped_data_size_pts  = num_entire_data_pt - num_partial_data * num_partition;
 
 		// Display Parameters
@@ -136,21 +145,28 @@ int main(int argc, char *argv[])
 		ta::BinData data;
 		if (flag_complex_data == true) {
 			clock_t t0 = clock();
-			data.load_binary_as_double (fileinfo.getFilePath().string(), num_entire_data_pt, datum_bit_length_B);
+			//複素数データにエラーが無いか検証してる？
+      data.load_binary_as_double (fileinfo.getFilePath().string(), num_entire_data_pt, datum_bit_length_B);
 			clock_t t1 = clock();
-			ta::print_elapse ("Data Loading", t0, t1);
+			//時間表時？
+      ta::print_elapse ("Data Loading", t0, t1);
 			
 		} else {
 			throw "not complex data";
 		}
 
 		// Create Directory
-		const path dest_dir = path (config.getOutputDirectory()) / fileinfo.getFileStemSubstr(); // = /opt/data/summation
+		//config.txtに設定されたパスを設定
+    const path dest_dir = path (config.getOutputDirectory()) / fileinfo.getFileStemSubstr(); // = /opt/data/summation
+		//c++のライブラリを使ってパスの作成
 		boost::filesystem::create_directories (dest_dir);
 		boost::filesystem::current_path (dest_dir);
 
 		// Initialize Parameters
-		cufftComplex *h_idata   = new cufftComplex[num_partial_data];
+		//num_partial_dataはバッチ処理で読み込むデータ量
+    //h_idataは何に使う?
+    //spectral_amp[t], spectral_phase[t]の箱を初期化。fft_batch数毎にtを作ってる
+    cufftComplex *h_idata   = new cufftComplex[num_partial_data];
 		float **spectral_amp    = new float*[fft_batch]; // Power Spectral Density, psd[time][freq]
 		float **spectral_phase  = new float*[fft_batch];
 		for(int t=0; t<fft_batch; t++){
@@ -162,7 +178,8 @@ int main(int argc, char *argv[])
 			h_idata[i].y = 0.0;
 		}
 
-		float *gain_amp   = new float[fft_window_width];
+		//ampとphaseにいれる数値の初期化
+    float *gain_amp   = new float[fft_window_width];
 		float *gain_phase = new float[fft_window_width];
 		for(int f=0; f<fft_window_width; f++){
 			gain_amp[f] = 0;
@@ -173,11 +190,14 @@ int main(int argc, char *argv[])
 		//
 		// MAIN
 		//
+    //num_partitionは分割ファイル数
+    //ここでバイナリデータの読み取りをしていますね
 		for (int pos = 0; pos < num_partition; pos++) {
 			const int partial_data_begin_pt = pos * num_partial_data;
-
 			// Extract patial data
-			if (flag_complex_data == true) {
+      //データを抽出してcudata[i].x, cudata[i].yに入れてる
+      //h_idataで出力?
+      if (flag_complex_data == true) {
 				data.extract_binary_data_xy (h_idata, partial_data_begin_pt, num_partial_data);
 			} else {
 				throw "not complex data";
@@ -196,11 +216,18 @@ int main(int argc, char *argv[])
 			if (pos == 0) {
 				stats.calcParams (h_idata, num_partial_data); // Calculate the mean & variance of the data
 			}
+      //データの平均か
 			normalize_data (h_idata, num_partial_data, stats);
 
 
 			// Forward FFT
-			stft (h_idata, fft_window_width, fft_batch, false);
+      //データを入れて、fftしてる。今回は不要?
+      stft (h_idata, fft_window_width, fft_batch, false);
+      
+      //多分ここで、1秒積分にするための処理が必要
+      //void time_series_integration_complex (const float integration_time_s, ta::FileInformation &fileinfo, ta::BinData &data, ta::Config &config, const path dest_dir)
+      //time_series_integration_complex (const float integration_time_s, ta::FileInformation &fileinfo, ta::BinData &data, ta::Config &config, const path dest_dir)
+
 
 			// Create a spectrogram: spectral_amp[t][f], spectral_phase[t][f]
 			clock_t spec0 = clock();
@@ -210,12 +237,6 @@ int main(int argc, char *argv[])
 
 			// Derive a band characteristics gain_amp[f] from spectral_amp[t][f]
 			mid_band_characteristics (gain_amp, fft_batch, fft_window_width, spectral_amp);
-			
-			if(pos == 0){
-				//ta::saveSpectrumOfComplexData("gain amplitude at first data block.2d", gain_amp, fft_window_width);
-				//ta::saveSpectrumOfComplexData("gain phase at first data block.2d", gain_phase, fft_window_width);
-			}
-			
 			
 			// Create a spectrogram image
 			if(flag_create_spectrogram_image == true){
@@ -227,119 +248,6 @@ int main(int argc, char *argv[])
 		band_characteristics (gain_amp, num_partition, fft_window_width);
 		save_band_characteristics (gain_amp, fft_window_width, flag_complex_data, fileinfo, dest_dir);
 		
-/*
-		//
-		// Calibrate Data
-		//
-
-		float *calib_gain_amp = new float [fft_window_width];
-		float *calib_gain_phase = new float [fft_window_width];
-		for(int f=0; f<fft_window_width; f++){
-			calib_gain_amp[f] = 0;
-			calib_gain_phase[f] = 0;
-		}
-
-		for(int pos=0; pos<num_partition; pos++){
-
-			// Load Data
-			if(complex_data == true){
-				loop_break_flag = loadBinaryDataComplex(partial_data_re, partial_data_im, num_partial_data, fileinfo.getFilePath().string().c_str(),  pos * datum_bit_length_B * num_partial_data, datum_bit_length_B);
-			}else{
-				loop_break_flag = loadBinaryData(partial_data_re, num_partial_data, fileinfo.getFilePath().string().c_str(),  pos * datum_bit_length_B * num_partial_data, datum_bit_length_B);
-			}
-			if(loop_break_flag != 0){ // Need to break also here.
-				break;
-			}
-
-			
-
-			// Normalize data using the mean & variance of the first data block (pos = 0)
-			if(pos == 0){
-				mean_re  = ta::mean(partial_data_re, num_partial_data);
-				mean_im  = ta::mean(partial_data_im, num_partial_data);
-				stdev_re = std::sqrt(ta::unbiased_variance(partial_data_re, num_partial_data, mean_re));
-				stdev_im = std::sqrt(ta::unbiased_variance(partial_data_im, num_partial_data, mean_im));
-			}	
-			for(int i=0; i<num_partial_data; i++){
-				partial_data_re[i] = (partial_data_re[i] - mean_re) / stdev_re;
-				partial_data_im[i] = (partial_data_im[i] - mean_im) / stdev_im;
-			}
-
-			
-			// Create input data on CPU
-			// h_idata = input data on host CPU
-			for(int i=0; i<num_partial_data; i++){
-				h_idata[i].x = partial_data_re[i];
-				h_idata[i].y = partial_data_im[i];
-			}
-
-			// Forward FFT
-			STFT(h_idata, fft_window_width, fft_batch, false);
-
-			// Create a spectrogram
-			//h_idata[0].x = 0; h_idata[0].y = 0; // Remove the direct current (DC) component
-			int index = 0; 
-			const float root_N = std::sqrt(fft_window_width);
-			for(int t=0; t<fft_batch; t++){
-				for(int f=0; f<fft_window_width; f++){
-					fft_re[f] = h_idata[index].x / root_N; 
-					fft_im[f] = h_idata[index].y / root_N; // This assignment is only for readability.
-
-					// Remove gain
-					fft_re[f] /= gain_amp[f];
-					fft_im[f] /= gain_amp[f];
-					spectral_amp[t][f]   = std::hypot(fft_re[f], fft_im[f]);
-					spectral_phase[t][f] = std::atan2(fft_im[f], fft_re[f]);
-
-					h_idata[index].x = fft_re[f];
-					h_idata[index].y = fft_im[f];
-					index++;
-				}
-			}
-
-			// Inverse FFT
-			STFT(h_idata, fft_window_width, fft_batch, true);
-
-			// Save Data
-			
-			if(pos < 5){
-			unsigned int *test = new unsigned int [num_partial_data];
-			for (int i=0; i<num_partial_data; i++){
-				//test[i] = static_cast<unsigned int>(h_idata[i].x);
-				//printf("(float %f, uint %u) ", h_idata[i].x, test[i]);
-				fprintf(ofp_calib, "%.3f\t%.3f\n", h_idata[i].x / root_N, h_idata[i].y / root_N);
-			}
-			//fwrite(test, sizeof(float), num_partial_data, ofp_calib);
-			delete [] test;
-			}
-			
-
-			// Derive a band characteristics, gain_psd[f]
-			for(int f=0; f<fft_window_width; f++){
-				for(int t=0; t<fft_batch; t++){
-					calib_gain_amp[f]   += spectral_amp[t][f] / fft_batch;
-					calib_gain_phase[f] += spectral_phase[t][f] / fft_batch;
-				}
-				// Do not plase the division by fft_batch here.
-			}
-		} // Next pos	
-		
-		// Band Characteristics
-		for(int f=0; f<fft_window_width; f++){
-			calib_gain_amp[f]   /= num_partition;
-			calib_gain_phase[f] /= num_partition;
-		}
-		calib_gain_amp[0] = 0;
-		ta::smoothUsingBPF(calib_gain_amp, fft_window_width, 0, std::floor(static_cast<float>(fft_window_width)/2.0));
-		if(complex_data == true){
-			ta::saveSpectrumOfComplexData("calib_gain_amp.2d", calib_gain_amp, fft_window_width);		
-			ta::saveSpectrumOfComplexData("calib_gain_phase.2d", calib_gain_phase, fft_window_width);
-		}else{
-			ta::saveData1D("calib_gain_amp.1d", calib_gain_amp, fft_window_width);
-			ta::saveData1D("calib_gain_phase.1d", calib_gain_phase, fft_window_width);
-		}
-*/
-
 		// Delete
 		delete [] h_idata;
 		for(int t=0; t<fft_batch; t++){
@@ -352,8 +260,6 @@ int main(int argc, char *argv[])
 
 		delete [] gain_amp;
 		delete [] gain_phase;
-		//delete [] calib_gain_amp;
-		//delete [] calib_gain_phase;
 
 		return 0;
 	}
@@ -397,7 +303,6 @@ void stft (cufftComplex *h_idata, const int fft_window_width, const int fft_batc
 	cudaFree(d_idata);
 	cufftDestroy(plan);
 }
-
 
 
 int gnuplot(const char *data_filepath_char, const plot_range range, ta::Config &config)
