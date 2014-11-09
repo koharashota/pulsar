@@ -1,9 +1,7 @@
-
 // 1データファイル分の積分データを配列に格納し、main 最後あたりでファイル出力
 // 不要な文は全て消す
 // ファイル末尾に中途半端に作った積分プログラムがあるので適当に改良せよ
 // void time_series_integration_complex (const float integration_time_s, ta::FileInformation &fileinfo, ta::BinData &data, ta::Config &config, const path dest_dir)
-
 
 //argv[0] 実行ファイル名 argv[1] 観測データ argv[2] 設定ファイル config.txt?
 
@@ -18,14 +16,12 @@
 //データの項とかの説明
 #include "Config.h"
 #include "BinData.h"
-#include "Stats.h"
+
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-
 //c++のファイルやディレクトリを操作ライブラリ
 #include <boost/filesystem.hpp>
-
 
 #define STR_LEN_MAX 2048
 #define CL
@@ -43,14 +39,7 @@ using std::endl;
 using std::string;
 using boost::filesystem::path;
 
-typedef struct {
-	string xmin, xmax;
-	string ymin, ymax;
-	string zmin, zmax;
-} plot_range;
 
-
-int gnuplot(const char *data_filepath_char, const plot_range range, ta::Config &config);
 void time_series_integration_complex (int integration_point, ta::BinData &data, int num_entire_data_pt, ta::FileInformation &fileinfo, ta::Config &config, const path dest_dir)
 
 int main(int argc, char *argv[])
@@ -70,7 +59,6 @@ int main(int argc, char *argv[])
 		printf ("Config: %s\n", path(argv[2]).string().c_str());	
 
 		// Observation Parameters
-    // config.txtで設定した情報を読み取って、定数を宣言
 		ta::Config config (argv[2]);
 		const bool   flag_complex_data   = true; //config.isComplexData(); // Data format: <Re><Re><Re>... or <Re><Im><Re><Im>...
 		const int    datum_bit_length_B  = config.getDatumBitLength_B(); // byte
@@ -88,26 +76,6 @@ int main(int argc, char *argv[])
 
     const int num_entire_data_pt = tmp_num_entire_data_pt;
     
-    //1/50*10^-9 = 20000000
-    //tmp_num_partial_data>20000000
-    int tmp_num_partial_data = static_cast<int>(config.getPulsarP0_pt() * 5); // 分割データ内に少なくとも1つのパルスが入るように、分割データの点数を設定。
-    if (tmp_num_partial_data < 20000000){
-      tmp_num_partial_data = 20000000
-    }
-		if (tmp_num_partial_data > num_entire_data_pt){ // ただし全データ数がそれに満たない場合、分割データ数を全データ数に設定。
-			tmp_num_partial_data = num_entire_data_pt;
-		}
-
-		//const int   integrate_window_width = 1024;
-		//const int   integrate_window_width       = config.getFFTWindowWidth();
-		//何ポイントで一秒になるか
-		const int   fft_window_width       = config.getFFTWindowWidth();
-		const int   fft_batch              = std::floor(static_cast<float>(tmp_num_partial_data) / fft_window_width);
-    const int   num_partial_data       = fft_window_width * fft_batch;
-		const int   num_partition          = std::floor( static_cast<float>(num_entire_data_pt) / num_partial_data);
-		const int   skipped_data_size_pts  = num_entire_data_pt - num_partial_data * num_partition;
-    
-    
     // Display Parameters
 		printf ("\nPulsar Information\n");
 		printf ("- Period      P0      = %f ms\n", pulsar_p0_s  * 1000);
@@ -117,17 +85,13 @@ int main(int argc, char *argv[])
 		printf ("- Sampling interval   = %f ns\n",  sampling_interval_s * 1E+9);
 		
     printf ("\nAnalysis Information\n");
-		printf ("- Interate Window Width    = %d pt = %f ms\n", integrate_window_width, integrate_window_width * sampling_interval_s * 1000);
-		printf ("- Partial Data Size   = %f ms = %d pt = %d MB (on RAM)\n", sampling_interval_s * num_partial_data * 1000, num_partial_data, sizeof(float)*num_partial_data/static_cast<int>(1E+6));
 		printf ("- Entire  Data Size   = %f ms = %d pt\n",                  sampling_interval_s * num_entire_data_pt * 1000, num_entire_data_pt);
-		printf ("- Skipped Data Size   = %f ms = %d pt\n",                  sampling_interval_s * skipped_data_size_pts * 1000, skipped_data_size_pts);
 		printf ("- Number of Analysis Partitions = %d\n", num_partition);
 
 		printf ("\nInitiate the process?");
 		if (!ta::stdin_yes_or_no()) {
 			throw "Task Terminated";
 		}
-
 		printf ("\nAnalyzing...\n");
 		
     
@@ -150,22 +114,11 @@ int main(int argc, char *argv[])
 		boost::filesystem::create_directories (dest_dir);
 		boost::filesystem::current_path (dest_dir);
 
-    /**
-    float *h_idata   = new float[num_partial_data];
-		for(int i=0; i<num_partial_data; i++){
-			h_idata[i].x = 0.0;
-			h_idata[i].y = 0.0;
-		}
-    **/
     
     //1s積分の読み出し 
     time_series_integration_complex (20000000, data, num_entire_data_pt, fileinfo, config, dest_dir) 
-	  
-    //normalizeでつかってる？多分いらない	
-    ta::Stats stats; // Statistic parameters including mean & variance values
 
     // Delete
-		//delete [] h_idata;
 		return 0;
 	}
 
@@ -180,7 +133,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 }
-
 
 
 /**
@@ -306,7 +258,8 @@ void time_series_integration_complex (int integration_point, ta::BinData &data, 
     fprintf(ofp_im,  "%f\n", integrate_im[t]);
     fprintf(ofp_re,  "%f\n", integrate_re[t]);
 	}
-	fclose(ofp_im);
+	
+  fclose(ofp_im);
 	fclose(ofp_re);
   
   delete [] h_idata;
