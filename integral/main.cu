@@ -51,7 +51,7 @@ typedef struct {
 
 
 int gnuplot(const char *data_filepath_char, const plot_range range, ta::Config &config);
-void time_series_integration_complex (const float integration_time_s, ta::FileInformation &fileinfo, ta::BinData &data, ta::Config &config, const path dest_dir)
+void time_series_integration_complex (const float integration_point, float *data, int num_entire_data_pt,int tmp_num_partial_data, ta::FileInformation &fileinfo, ta::Config &config, const path dest_dir)
 
 int main(int argc, char *argv[])
 {
@@ -89,20 +89,24 @@ int main(int argc, char *argv[])
     const int num_entire_data_pt = tmp_num_entire_data_pt;
     
     //1/50*10^-9 = 20000000
-		int tmp_num_partial_data = static_cast<int>(config.getPulsarP0_pt() * 5); // 分割データ内に少なくとも1つのパルスが入るように、分割データの点数を設定。
+    //tmp_num_partial_data>20000000
+    int tmp_num_partial_data = static_cast<int>(config.getPulsarP0_pt() * 5); // 分割データ内に少なくとも1つのパルスが入るように、分割データの点数を設定。
+    if (tmp_num_partial_data < 20000000){
+      tmp_num_partial_data = 20000000
+    }
 		if (tmp_num_partial_data > num_entire_data_pt){ // ただし全データ数がそれに満たない場合、分割データ数を全データ数に設定。
 			tmp_num_partial_data = num_entire_data_pt;
 		}
 
 		//const int   integrate_window_width = 1024;
-		const int   integrate_window_width       = config.getFFTWindowWidth();
+		//const int   integrate_window_width       = config.getFFTWindowWidth();
+		//何ポイントで一秒になるか
+    const int   integrate_window_width       = 20000000;
     const int   integrate_batch        = std::floor(static_cast<float>(tmp_num_partial_data) / integrate_window_width);
-    const int   num_partial_data       = fft_window_width * fft_batch;
+    const int   num_partial_data       = integrate_window_width * integrate_batch;
 		const int   num_partition          = std::floor( static_cast<float>(num_entire_data_pt) / num_partial_data);
 		const int   skipped_data_size_pts  = num_entire_data_pt - num_partial_data * num_partition;
-
 		
-    
     
     
     // Display Parameters
@@ -150,37 +154,18 @@ int main(int argc, char *argv[])
 		boost::filesystem::create_directories (dest_dir);
 		boost::filesystem::current_path (dest_dir);
 
-		// Initialize Parameters
-		//num_partial_dataはバッチ処理で読み込むデータ量
-    //h_idataは何に使う?
-    //spectral_amp[t], spectral_phase[t]の箱を初期化。fft_batch数毎にtを作ってる
-    /**
-    cufftComplex *h_idata   = new cufftComplex[num_partial_data];
-		float **spectral_amp    = new float*[fft_batch]; // Power Spectral Density, psd[time][freq]
-		float **spectral_phase  = new float*[fft_batch];
-		for(int t=0; t<fft_batch; t++){
-			spectral_amp[t]   = new float[fft_window_width];
-			spectral_phase[t] = new float[fft_window_width];
-		}
-		for(int i=0; i<num_partial_data; i++){
-			h_idata[i].x = 0.0;
-			h_idata[i].y = 0.0;
-		}
-    **/
-
-		//ampとphaseにいれる数値の初期化
     float *h_idata   = new float[num_partial_data];
-    float *gain_amp   = new float[integrate_window_width];
-		float *gain_phase = new float[integrate_window_width];
-		float **spectral_amp    = new float*[integrate_batch]; // Power Spectral Density, psd[time][freq]
-		float **spectral_phase  = new float*[integrate_batch];
-		for(int f=0; f<integrate_window_width; f++){
-			gain_amp[f] = 0;
-			gain_phase[f] = 0;
-		}
 		for(int i=0; i<num_partial_data; i++){
 			h_idata[i].x = 0.0;
 			h_idata[i].y = 0.0;
+		}
+
+    //1秒積分のために用意
+    float *integrate_re = new float[integrate_batch * num_partition];
+    float *integrate_im = new float[integrate_batch * num_partition];
+		for(int f=0; f<integrate_batch * num_partition; f++){
+			integrate_re[f] = 0;
+			integrate_im[f] = 0;
 		}
 
 		ta::Stats stats; // Statistic parameters including mean & variance values
@@ -188,8 +173,6 @@ int main(int argc, char *argv[])
 		//
 		// MAIN
 		//
-    //num_partitionは分割ファイル数
-    //ここでバイナリデータの読み取りをしていますね
     
     /**
     //1/50*10^-9 = 20000000
@@ -204,13 +187,13 @@ int main(int argc, char *argv[])
 
     for (int pos = 0; pos < num_partition; pos++) {
 			const int partial_data_begin_pt = pos * num_partial_data;
+      
+      //hi_dataの作成
       if (flag_complex_data == true) {
-        //data.extract_binary_data_xy (h_idata, partial_data_begin_pt, num_partial_data);
-        //int BinData::extract_binary_data_xy(cufftComplex *cudata, const int extraction_first_point, const int extraction_width) const
         const{ 
           float *cudata = h_idata
           const int extraction_first_point = partial_data_begin_pt
-          const int extraction_width num_partial_data
+          const int extraction_width = num_partial_data
             
           if( !load_d_executed ){return -1;}
           
@@ -223,12 +206,13 @@ int main(int argc, char *argv[])
               cudata[i].y = 0;
             }
             for(int i=0; i<num_data - extraction_first_point; i++){
-              //ここでデータの時間と強度がよめれば良い
+              //ここでデータの時間と強度がよめれば良い多分re, imで出来てる?
               cudata[i].x = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].x));
               cudata[i].y = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].y));
             }
           }else{
             for(int i=0; i<extraction_width; i++){
+              //ここでデータの時間と強度がよめれば良い多分re, imで出来てる?
               cudata[i].x = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].x)); // start から start+width-1 ポイントのデータを抽出
               cudata[i].y = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].y)); // start から start+width-1 ポイントのデータを抽出
             }
@@ -238,7 +222,9 @@ int main(int argc, char *argv[])
       } else {
         throw "not complex data";
       }
-      
+     
+
+
 			// Confirm Data For Debug
 			if (pos == 0) {
 				std::ofstream fout_test ( (dest_dir / (fileinfo.getFileStem().string() + ".txt")).string() );
@@ -247,31 +233,43 @@ int main(int argc, char *argv[])
 				}
 				fout_test.close();
 			}
+      
+      //一秒積分
+      for(j=0; j < integrate_batch ; j++){
+        //初期化
+        double re=0.0;
+        double im=0.0;
+        int integrate_first_point = j * integrate_window_width + pos * num_partial_data;
+        
+        for(i=0; i < integrate_window_width; i++)
+        {
+          re+=h_idata[i+integrate_first_point];
+          im+=h_idata[i+integrate_first_point];
+        }
+        integrate_re[j + pos * integrate_batch] = re;
+        integrate_im[j + pos * integrate_batch] = im;
+        //デバッグ
+        printf("Intergral re : %lf, im : %lf\n", re , im);
+      }
 
-      //同じような感じで一秒積分
-      //stft (h_idata, fft_window_width, fft_batch, false);
-
-		  /**
-        同じような感じでgnuplot
-      clock_t spec0 = clock();
-			spectrogram (spectral_amp, spectral_phase, fft_batch, fft_window_width, h_idata);
-			clock_t spec1 = clock();
-			ta::print_elapse ("Spectrogram", spec0, spec1);
-      **/
+      
+      //integrate_re,integrate_imを保存
+      if (flag_complex_data == true) {
+        path fout = dest_dir / (fileinfo.getFileStem().string() + ".intergrate.2d");
+        //saveData2D (const char *filename, const float *data, const int data_length, const float x_resolution)
+        ta::saveData2D(fout.string().c_str(),re , fft_window_width);	
+      }
+      else {
+        path fout = dest_dir / (fileinfo.getFileStem().string() + ".integrate.1d");
+        ta::saveData1D(fout.string().c_str(), band_amp, fft_window_width);
+      }
 
 		} // Next pos		
 		
 		// Delete
 		delete [] h_idata;
-		for(int t=0; t<fft_batch; t++){
-			delete [] spectral_amp[t];
-			delete [] spectral_phase[t];
-		}
-		delete [] spectral_amp;
-		delete [] spectral_phase;
-
-		delete [] gain_amp;
-		delete [] gain_phase;
+		delete [] integrate_re;
+		delete [] integrate_im;
 
 		return 0;
 	}
@@ -287,49 +285,121 @@ int main(int argc, char *argv[])
 	}
 }
 
+
+
 /**
-void time_series_integration_complex (const float integration_time_s, ta::FileInformation &fileinfo, ta::BinData &data, ta::Config &config, const path dest_dir)
-{
-	const int num_entire_data_pt = data.getNumData();
-	const int integration_time_pt = integration_time_s / config.getSamplingInterval_s();
-	const int num_integ_data_pt = num_entire_data_pt / integration_time_pt + 1; // Important +1
-	const int num_residue_pt = num_entire_data_pt % integration_time_pt;
-
-	cufftComplex *data_xy = new cufftComplex[integration_time_pt];
-	float *tmp_data_x = new float[integration_time_pt];
-	float *tmp_data_y = new float[integration_time_pt];
-	float *integ_data_x = new float[num_integ_data_pt];
-	float *integ_data_y = new float[num_integ_data_pt];
-
-	for (int pos = 0; pos < num_integ_data_pt; pos++) {
-		data.extract_binary_data_xy (data_xy, pos * integration_time_pt, integration_time_pt);
-		for (int i = 0; i < integration_time_pt; i++) {
-			tmp_data_x[i] = data_xy[i].x;
-			tmp_data_y[i] = data_xy[i].y;
-		}
-
-		if (pos < num_integ_data_pt - 1) {
-			integ_data_x[pos] = ta::mean (tmp_data_x, integration_time_pt);
-			integ_data_y[pos] = ta::mean (tmp_data_y, integration_time_pt);
-		} else {
-			integ_data_x[pos] = ta::mean (tmp_data_x, num_residue_pt);
-			integ_data_y[pos] = ta::mean (tmp_data_y, num_residue_pt);
-		}
-	}
-
-//	path filepath_re = 
-//	path filepath_im = 
-//	ta::saveData1D (filepath_re.string().c_str(), integ_data_x, num_integ_data_pt);
-//	ta::saveData1D (filepath_re.string().c_str(), integ_data_x, num_integ_data_pt);
-	//ta::saveData2D (filepath_re.string().c_str(), integ_data_x, num_integ_data_pt, integration_time_pt);
-	//ta::saveData2D (filepath_im.string().c_str(), integ_data_y, num_integ_data_pt, integration_time_pt);
-
-
-	
-	delete [] data_xy;
-	delete [] tmp_data_x;
-	delete [] tmp_data_y;
-	delete [] integ_data_x;
-	delete [] integ_data_y;
-}
+  ・・くみこめばうごくかなー
+  integration_point 何ポイントの合計値を取るか(一秒積分なら1/50^[-9]なので20000000ポイント)
+  data バイナリから読み取ったデータ配列をもらう。スペクトルの大きさの配列を受け取りたい(ta::BinData data.load_binary_as_doubleでよんだデータ)
+  num_entire_data_pt データの全ポイント数
+  tmp_num_partial_data 分割データのポイント数(いらないかも、てかいらなそう)
+  fileinfo fileのパス情報とか受け取る
+  config configの読み取り
+  dest_dir 保存先のディレクトリかな？
+  complex_flagはオンと仮定
 **/
+
+void time_series_integration_complex (const float integration_point, ta::BinData &data, int num_entire_data_pt, ta::FileInformation &fileinfo, ta::Config &config, const path dest_dir)
+{
+  
+  int tmp_num_partial_data = 100000000 //適当にセット(多分必要ない。寧ろintegrate_window_width軽くした方がよさげ)
+  const int   integrate_window_width  = integration_point;
+  const int   integrate_batch = std::floor(static_cast<float>(tmp_num_partial_data) / integrate_window_width);
+  const int   num_partial_data       = integrate_window_width * integrate_batch;
+  const int   num_partition          = std::floor( static_cast<float>(num_entire_data_pt) / num_partial_data);
+  const int   skipped_data_size_pts  = num_entire_data_pt - num_partial_data * num_partition;
+
+  //1秒積分のために用意
+  float *integrate_re = new float[integrate_batch * num_partition];
+  float *integrate_im = new float[integrate_batch * num_partition];
+  for(int f=0; f<integrate_batch * num_partition; f++){
+    integrate_re[f] = 0;
+    integrate_im[f] = 0;
+  }
+  
+  float *h_idata   = new float[num_partial_data];
+  for(int i=0; i<num_partial_data; i++){
+    h_idata[i].x = 0.0;
+    h_idata[i].y = 0.0;
+  }
+  
+  //
+  // MAIN
+  //
+  
+  for (int pos = 0; pos < num_partition; pos++) {
+    const int partial_data_begin_pt = pos * num_partial_data;
+    //hi_dataの作成
+    // ここの処理でreとimのそれぞれの強度をポイント毎に入れられれば良い
+    if (flag_complex_data == true) {
+      const{ 
+        float *cudata = h_idata
+        const int extraction_first_point = partial_data_begin_pt
+        const int extraction_width = num_partial_data
+          
+        if( !load_d_executed ){return -1;}
+        
+        if (extraction_first_point < 0 || extraction_width < 0 || extraction_width > num_data){
+          throw "Exception: 関数 Data::extractData() の引数不正";
+        }
+        if (extraction_first_point + extraction_width> num_data){
+          for(int i=0; i<extraction_width; i++){
+            cudata[i].x = 0;
+            cudata[i].y = 0;
+          }
+          for(int i=0; i<num_data - extraction_first_point; i++){
+            //ここでデータの時間と強度がよめれば良い多分re, imで出来てる?
+            cudata[i].x = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].x));
+            cudata[i].y = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].y));
+          }
+        }else{
+          for(int i=0; i<extraction_width; i++){
+            //ここでデータの時間と強度がよめれば良い多分re, imで出来てる?
+            cudata[i].x = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].x)); // start から start+width-1 ポイントのデータを抽出
+            cudata[i].y = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].y)); // start から start+width-1 ポイントのデータを抽出
+          }
+        }
+        return 0;
+      }
+    } else {
+      throw "not complex data";
+    }
+
+    // Confirm Data For Debug
+    if (pos == 0) {
+      std::ofstream fout_test ( (dest_dir / (fileinfo.getFileStem().string() + ".txt")).string() );
+      for (int i = 0; i < 100; i++) {
+        fout_test << h_idata[i].x << "\t" << h_idata[i].y << "\n";
+      }
+      fout_test.close();
+    }
+    
+    //一秒積分
+    for(j=0; j < integrate_batch ; j++){
+      //初期化
+      double re=0.0;
+      double im=0.0;
+      int integrate_first_point = j * integrate_window_width + pos * num_partial_data;
+      
+      for(i=0; i < integrate_window_width; i++)
+      {
+        re+=h_idata[i+integrate_first_point];
+        im+=h_idata[i+integrate_first_point];
+      }
+      integrate_re[j + pos * integrate_batch] = re;
+      integrate_im[j + pos * integrate_batch] = im;
+      //デバッグ
+      printf("Intergral re : %lf, im : %lf\n", re , im);
+    }
+
+    //データセーブ integrate_re integrate_imを保存すればいいね
+    path fout = dest_dir / (fileinfo.getFileStem().string() + ".intergrate.2d");
+    //saveData2D (const char *filename, const float *data, const int data_length, const float x_resolution)
+    ta::saveData2D(fout.string().c_str(),re , fft_window_width);	
+
+  } // Next pos		
+	
+  delete [] h_idata;
+  delete [] integrate_re;
+  delete [] integrate_im;
+}
