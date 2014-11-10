@@ -1,9 +1,10 @@
-// 1ƒf[ƒ^ƒtƒ@ƒCƒ‹•ª‚ÌÏ•ªƒf[ƒ^‚ğ”z—ñ‚ÉŠi”[‚µAmain ÅŒã‚ ‚½‚è‚Åƒtƒ@ƒCƒ‹o—Í
-// •s—v‚È•¶‚Í‘S‚ÄÁ‚·
-// ƒtƒ@ƒCƒ‹––”ö‚É’†“r”¼’[‚Éì‚Á‚½Ï•ªƒvƒƒOƒ‰ƒ€‚ª‚ ‚é‚Ì‚Å“K“–‚É‰ü—Ç‚¹‚æ
+
+// 1ãƒ‡ãƒ¼ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«åˆ†ã®ç©åˆ†ãƒ‡ãƒ¼ã‚¿ã‚’é…åˆ—ã«æ ¼ç´ã—ã€main æœ€å¾Œã‚ãŸã‚Šã§ãƒ•ã‚¡ã‚¤ãƒ«å‡ºåŠ›
+// ä¸è¦ãªæ–‡ã¯å…¨ã¦æ¶ˆã™
+// ãƒ•ã‚¡ã‚¤ãƒ«æœ«å°¾ã«ä¸­é€”åŠç«¯ã«ä½œã£ãŸç©åˆ†ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãŒã‚ã‚‹ã®ã§é©å½“ã«æ”¹è‰¯ã›ã‚ˆ
 // void time_series_integration_complex (const float integration_time_s, ta::FileInformation &fileinfo, ta::BinData &data, ta::Config &config, const path dest_dir)
 
-//argv[0] Àsƒtƒ@ƒCƒ‹–¼ argv[1] ŠÏ‘ªƒf[ƒ^ argv[2] İ’èƒtƒ@ƒCƒ‹ config.txt?
+//argv[0] å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«å argv[1] è¦³æ¸¬ãƒ‡ãƒ¼ã‚¿ argv[2] è¨­å®šãƒ•ã‚¡ã‚¤ãƒ« config.txt?
 
 #include <cstdio>
 #include <iostream>
@@ -11,27 +12,32 @@
 #include <string>
 #include <ctime>
 #include "Functions.h"
-//c++‚Ìƒ‰ƒCƒuƒ‰ƒŠ‚ğg‚Á‚ÄƒfƒBƒŒƒNƒgƒŠ‚Æ‚©ƒtƒ@ƒCƒ‹ƒpƒX‚Ì‘€ì fs
+//c++ã®ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã‚’ä½¿ã£ã¦ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã¨ã‹ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã®æ“ä½œ fs
 #include "FileInformation.h"
-//ƒf[ƒ^‚Ì€‚Æ‚©‚Ìà–¾
+//ãƒ‡ãƒ¼ã‚¿ã®é …ã¨ã‹ã®èª¬æ˜
 #include "Config.h"
 #include "BinData.h"
-
+#include "Stats.h"
 
 #include <cuda.h>
+#include <cufft.h>
 #include <cuda_runtime.h>
-//c++‚Ìƒtƒ@ƒCƒ‹‚âƒfƒBƒŒƒNƒgƒŠ‚ğ‘€ìƒ‰ƒCƒuƒ‰ƒŠ
+
+//c++ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚„ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’æ“ä½œãƒ©ã‚¤ãƒ–ãƒ©ãƒª
 #include <boost/filesystem.hpp>
+
+#pragma comment(lib, "cudart")
+#pragma comment(lib, "cufft")
 
 #define STR_LEN_MAX 2048
 #define CL
 
 #ifdef CL
-	#include <Windows.h>
-	#define PLOT "pgnuplot"
+//#include <Windows.h>
+#define PLOT "pgnuplot"
 #elif defined(GCC)
-	#include <unistd.h>
-	#define PLOT "gnuplot"
+#include <unistd.h>
+#define PLOT "gnuplot"
 #endif
 
 using std::cout;
@@ -40,229 +46,199 @@ using std::string;
 using boost::filesystem::path;
 
 
-void time_series_integration_complex (int integration_point, ta::BinData &data, int num_entire_data_pt, ta::FileInformation &fileinfo, ta::Config &config, const path dest_dir)
+void time_series_integration_complex (int integration_point, ta::BinData &data, int num_entire_data_pt, int datum_bit_length_B, ta::FileInformation &fileinfo, ta::Config &config, const path dest_dir);
 
 int main(int argc, char *argv[])
 {
-
-	bool flag_create_spectrogram_image = false;
-	try{
-		// Input File ‚Ìˆø”‚ÉŒë‚è‚ª‚ ‚Á‚½‚çƒGƒ‰[‚ğ‚Í‚­
-		if(argc != 3){
-			printf("Usage: %s <file> <confiig>\n", argv[0]);
-			throw "Invalid Arguments";
-		}
-
-		//fs ƒtƒ@ƒCƒ‹î•ñéŒ¾
-    ta::FileInformation fileinfo (argv[1], '_');
-		printf ("Data:   %s\n", fileinfo.getFilePath().string().c_str());
-		printf ("Config: %s\n", path(argv[2]).string().c_str());	
-
-		// Observation Parameters
-		ta::Config config (argv[2]);
-		const bool   flag_complex_data   = true; //config.isComplexData(); // Data format: <Re><Re><Re>... or <Re><Im><Re><Im>...
-		const int    datum_bit_length_B  = config.getDatumBitLength_B(); // byte
-		const double sampling_freq_Hz    = config.getSamplingFrequency_Hz(); // Hz, sample/sec
-		const double sampling_interval_s = config.getSamplingInterval_s(); // sec
-
-		const float  pulsar_p0_s         = config.getPulsarP0_s(); 
-		const float  pulsar_w50_s        = config.getPulsarW50_s(); 
-
     
-    int tmp_num_entire_data_pt = fileinfo.getFilesize_B() / datum_bit_length_B;
-		if (flag_complex_data == true){
-			tmp_num_entire_data_pt /= 2;
-		}
-
-    const int num_entire_data_pt = tmp_num_entire_data_pt;
+    bool flag_create_spectrogram_image = false;
+    try{
+        // Input File ã®å¼•æ•°ã«èª¤ã‚ŠãŒã‚ã£ãŸã‚‰ã‚¨ãƒ©ãƒ¼ã‚’ã¯ã
+        if(argc != 3){
+            printf("Usage: %s <file> <confiig>Â¥n", argv[0]);
+            throw "Invalid Arguments";
+        }
+        
+        //fs ãƒ•ã‚¡ã‚¤ãƒ«æƒ…å ±å®£è¨€
+        ta::FileInformation fileinfo (argv[1], '_');
+        printf ("Data:   %sÂ¥n", fileinfo.getFilePath().string().c_str());
+        printf ("Config: %sÂ¥n", path(argv[2]).string().c_str());
+        
+        // Observation Parameters
+        ta::Config config (argv[2]);
+        const bool   flag_complex_data   = true; //config.isComplexData(); // Data format: <Re><Re><Re>... or <Re><Im><Re><Im>...
+        const int    datum_bit_length_B  = config.getDatumBitLength_B(); // byte
+        const double sampling_freq_Hz    = config.getSamplingFrequency_Hz(); // Hz, sample/sec
+        const double sampling_interval_s = config.getSamplingInterval_s(); // sec
+        
+        const float  pulsar_p0_s         = config.getPulsarP0_s();
+        const float  pulsar_w50_s        = config.getPulsarW50_s();
+        
+        
+        int tmp_num_entire_data_pt = fileinfo.getFilesize_B() / datum_bit_length_B;
+        if (flag_complex_data == true){
+            tmp_num_entire_data_pt /= 2;
+        }
+        
+        const int num_entire_data_pt = tmp_num_entire_data_pt;
+        
+        // Display Parameters
+        printf ("Â¥nPulsar InformationÂ¥n");
+        printf ("- Period      P0      = %f msÂ¥n", pulsar_p0_s  * 1000);
+        printf ("- Pulse Width W50     = %f msÂ¥n", pulsar_w50_s * 1000);
+        printf ("Â¥nData InformationÂ¥n");
+        printf ("- Sampling frequency  = %f MHzÂ¥n", sampling_freq_Hz / 1E+6);
+        printf ("- Sampling interval   = %f nsÂ¥n",  sampling_interval_s * 1E+9);
+        
+        printf ("Â¥nAnalysis InformationÂ¥n");
+        printf ("- Entire  Data Size   = %f ms = %d ptÂ¥n",                  sampling_interval_s * num_entire_data_pt * 1000, num_entire_data_pt);
+        //printf ("- Number of Analysis Partitions = %dÂ¥n", num_partition);
+        
+        printf ("Â¥nInitiate the process?");
+        if (!ta::stdin_yes_or_no()) {
+            throw "Task Terminated";
+        }
+        printf ("Â¥nAnalyzing...Â¥n");
+        
+        
+        // Data
+        ta::BinData data;
+        if (flag_complex_data == true) {
+            clock_t t0 = clock();
+            data.load_binary_as_double (fileinfo.getFilePath().string(), num_entire_data_pt, datum_bit_length_B);
+            clock_t t1 = clock();
+            ta::print_elapse ("Data Loading", t0, t1);
+            
+        } else {
+            throw "not complex data";
+        }
+        
+        // Create Directory
+        //config.txtã«è¨­å®šã•ã‚ŒãŸãƒ‘ã‚¹ã‚’è¨­å®š
+        const path dest_dir = path (config.getOutputDirectory()) / fileinfo.getFileStemSubstr(); // = /opt/data/summation
+        //c++ã®ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã‚’ä½¿ã£ã¦ãƒ‘ã‚¹ã®ä½œæˆ
+        boost::filesystem::create_directories (dest_dir);
+        boost::filesystem::current_path (dest_dir);
+        
+        
+        //1sç©åˆ†ã®èª­ã¿å‡ºã—
+        time_series_integration_complex (20000000, data, num_entire_data_pt, datum_bit_length_B, fileinfo, config, dest_dir);
+        
+        // Delete
+        return 0;
+    }
     
-    // Display Parameters
-		printf ("\nPulsar Information\n");
-		printf ("- Period      P0      = %f ms\n", pulsar_p0_s  * 1000);
-		printf ("- Pulse Width W50     = %f ms\n", pulsar_w50_s * 1000);
-		printf ("\nData Information\n");
-		printf ("- Sampling frequency  = %f MHz\n", sampling_freq_Hz / 1E+6);
-		printf ("- Sampling interval   = %f ns\n",  sampling_interval_s * 1E+9);
-		
-    printf ("\nAnalysis Information\n");
-		printf ("- Entire  Data Size   = %f ms = %d pt\n",                  sampling_interval_s * num_entire_data_pt * 1000, num_entire_data_pt);
-		printf ("- Number of Analysis Partitions = %d\n", num_partition);
-
-		printf ("\nInitiate the process?");
-		if (!ta::stdin_yes_or_no()) {
-			throw "Task Terminated";
-		}
-		printf ("\nAnalyzing...\n");
-		
-    
-    // Data
-		ta::BinData data;
-		if (flag_complex_data == true) {
-			clock_t t0 = clock();
-      data.load_binary_as_double (fileinfo.getFilePath().string(), num_entire_data_pt, datum_bit_length_B);
-			clock_t t1 = clock();
-      ta::print_elapse ("Data Loading", t0, t1);
-			
-		} else {
-			throw "not complex data";
-		}
-
-		// Create Directory
-		//config.txt‚Éİ’è‚³‚ê‚½ƒpƒX‚ğİ’è
-    const path dest_dir = path (config.getOutputDirectory()) / fileinfo.getFileStemSubstr(); // = /opt/data/summation
-		//c++‚Ìƒ‰ƒCƒuƒ‰ƒŠ‚ğg‚Á‚ÄƒpƒX‚Ìì¬
-		boost::filesystem::create_directories (dest_dir);
-		boost::filesystem::current_path (dest_dir);
-
-    
-    //1sÏ•ª‚Ì“Ç‚İo‚µ 
-    time_series_integration_complex (20000000, data, num_entire_data_pt, fileinfo, config, dest_dir) 
-
-    // Delete
-		return 0;
-	}
-
-	catch (const char *err) {
-		fprintf(stderr, "%s\n", err);
-		system ("pause");
-		return -1;
-	}
-	catch (const string err) {
-		fprintf(stderr, "%s\n", err.c_str());
-		system ("pause");
-		return -1;
-	}
+    catch (const char *err) {
+        fprintf(stderr, "%sÂ¥n", err);
+        system ("pause");
+        return -1;
+    }
+    catch (const string err) {
+        fprintf(stderr, "%sÂ¥n", err.c_str());
+        system ("pause");
+        return -1;
+    }
 }
 
 
 /**
-  EE‚­‚İ‚±‚ß‚Î‚¤‚²‚­‚©‚È[
-  integration_point ‰½ƒ|ƒCƒ“ƒg‚Ì‡Œv’l‚ğæ‚é‚©(ˆê•bÏ•ª‚È‚ç1/50^[-9]‚È‚Ì‚Å20000000ƒ|ƒCƒ“ƒg)
-  data ƒoƒCƒiƒŠ‚©‚ç“Ç‚İæ‚Á‚½ƒf[ƒ^”z—ñ‚ğ‚à‚ç‚¤BƒXƒyƒNƒgƒ‹‚Ì‘å‚«‚³‚Ì”z—ñ‚ğó‚¯æ‚è‚½‚¢(ta::BinData data.load_binary_as_double‚Å‚æ‚ñ‚¾ƒf[ƒ^)
-  num_entire_data_pt ƒf[ƒ^‚Ì‘Sƒ|ƒCƒ“ƒg”
-  tmp_num_partial_data •ªŠ„ƒf[ƒ^‚Ìƒ|ƒCƒ“ƒg”(‚¢‚ç‚È‚¢‚©‚àA‚Ä‚©‚¢‚ç‚È‚»‚¤)
-  fileinfo file‚ÌƒpƒXî•ñ‚Æ‚©ó‚¯æ‚é
-  config config‚Ì“Ç‚İæ‚è
-  dest_dir •Û‘¶æ‚ÌƒfƒBƒŒƒNƒgƒŠ‚©‚ÈH
-  complex_flag‚ÍƒIƒ“‚Æ‰¼’è
-**/
+ ãƒ»ãƒ»ãã¿ã“ã‚ã°ã†ã”ãã‹ãªãƒ¼
+ integration_point ä½•ãƒã‚¤ãƒ³ãƒˆã®åˆè¨ˆå€¤ã‚’å–ã‚‹ã‹(ä¸€ç§’ç©åˆ†ãªã‚‰1/50^[-9]ãªã®ã§20000000ãƒã‚¤ãƒ³ãƒˆ)
+ data ãƒã‚¤ãƒŠãƒªã‹ã‚‰èª­ã¿å–ã£ãŸãƒ‡ãƒ¼ã‚¿é…åˆ—ã‚’ã‚‚ã‚‰ã†ã€‚ã‚¹ãƒšã‚¯ãƒˆãƒ«ã®å¤§ãã•ã®é…åˆ—ã‚’å—ã‘å–ã‚ŠãŸã„(ta::BinData data.load_binary_as_doubleã§ã‚ˆã‚“ã ãƒ‡ãƒ¼ã‚¿)
+ num_entire_data_pt ãƒ‡ãƒ¼ã‚¿ã®å…¨ãƒã‚¤ãƒ³ãƒˆæ•°
+ tmp_num_partial_data åˆ†å‰²ãƒ‡ãƒ¼ã‚¿ã®ãƒã‚¤ãƒ³ãƒˆæ•°(ã„ã‚‰ãªã„ã‹ã‚‚ã€ã¦ã‹ã„ã‚‰ãªãã†)
+ fileinfo fileã®ãƒ‘ã‚¹æƒ…å ±ã¨ã‹å—ã‘å–ã‚‹
+ config configã®èª­ã¿å–ã‚Š
+ dest_dir ä¿å­˜å…ˆã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‹ãªï¼Ÿ
+ complex_flagã¯ã‚ªãƒ³ã¨ä»®å®š
+ **/
 
-void time_series_integration_complex (int integration_point, ta::BinData &data, int num_entire_data_pt, ta::FileInformation &fileinfo, ta::Config &config, const path dest_dir)
+void time_series_integration_complex (int integration_point, ta::BinData &data, int num_entire_data_pt, int datum_bit_length_B, ta::FileInformation &fileinfo, ta::Config &config, const path dest_dir)
 {
-  
-  int tmp_num_partial_data = 100000000 //“K“–‚ÉƒZƒbƒg(•K—v‚È‚¢B”J‚ëintegrate_window_widthŒy‚­‚µ‚½•û‚ª‚æ‚³‚°)
-  const int   integrate_window_width  = integration_point;
-  const int   integrate_batch = std::floor(static_cast<float>(tmp_num_partial_data) / integrate_window_width);
-  const int   num_partial_data       = integrate_window_width * integrate_batch;
-  const int   num_partition          = std::floor( static_cast<float>(num_entire_data_pt) / num_partial_data);
-  const int   skipped_data_size_pts  = num_entire_data_pt - num_partial_data * num_partition;
-
-  //1•bÏ•ª‚Ì‚½‚ß‚É—pˆÓ
-  float *integrate_re = new float[integrate_batch * num_partition];
-  float *integrate_im = new float[integrate_batch * num_partition];
-  for(int f=0; f<integrate_batch * num_partition; f++){
-    integrate_re[f] = 0;
-    integrate_im[f] = 0;
-  }
-  
-  float *h_idata   = new float[num_partial_data];
-  for(int i=0; i<num_partial_data; i++){
-    h_idata[i].x = 0.0;
-    h_idata[i].y = 0.0;
-  }
-  
-  //
-  // MAIN
-  //
-  
-  for (int pos = 0; pos < num_partition; pos++) {
-    const int partial_data_begin_pt = pos * num_partial_data;
-    //hi_data‚Ìì¬
-    // ‚±‚±‚Ìˆ—‚Åre‚Æim‚Ì‚»‚ê‚¼‚ê‚Ì‹­“x‚ğƒ|ƒCƒ“ƒg–ˆ‚É“ü‚ê‚ç‚ê‚ê‚Î—Ç‚¢
-    if (flag_complex_data == true) {
-      const{
-
-        float *cudata = h_idata
-        const int extraction_first_point = partial_data_begin_pt
-        const int extraction_width = num_partial_data
-          
-        if( !load_d_executed ){return -1;}
-        
-        if (extraction_first_point < 0 || extraction_width < 0 || extraction_width > num_data){
-          throw "Exception: ŠÖ” Data::extractData() ‚Ìˆø”•s³";
-        }
-        if (extraction_first_point + extraction_width> num_data){
-          for(int i=0; i<extraction_width; i++){
-            cudata[i].x = 0;
-            cudata[i].y = 0;
-          }
-          for(int i=0; i<num_data - extraction_first_point; i++){
-            //‚±‚±‚Åƒf[ƒ^‚ÌŠÔ‚Æ‹­“x‚ª‚æ‚ß‚ê‚Î—Ç‚¢‘½•ªre, im‚Åo—ˆ‚Ä‚é?
-            cudata[i].x = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].x));
-            cudata[i].y = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].y));
-          }
-        }else{
-          for(int i=0; i<extraction_width; i++){
-            //‚±‚±‚Åƒf[ƒ^‚ÌŠÔ‚Æ‹­“x‚ª‚æ‚ß‚ê‚Î—Ç‚¢‘½•ªre, im‚Åo—ˆ‚Ä‚é?
-            cudata[i].x = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].x)); // start ‚©‚ç start+width-1 ƒ|ƒCƒ“ƒg‚Ìƒf[ƒ^‚ğ’Šo
-            cudata[i].y = static_cast<float>(static_cast<unsigned>(data[extraction_first_point + i].y)); // start ‚©‚ç start+width-1 ƒ|ƒCƒ“ƒg‚Ìƒf[ƒ^‚ğ’Šo
-          }
-        }
-        return 0;
-      }
-    } else {
-      throw "not complex data";
-    }
-
-    // Confirm Data For Debug
-    if (pos == 0) {
-      std::ofstream fout_test ( (dest_dir / (fileinfo.getFileStem().string() + ".txt")).string() );
-      for (int i = 0; i < 100; i++) {
-        fout_test << h_idata[i].x << "\t" << h_idata[i].y << "\n";
-      }
-      fout_test.close();
+    
+    int tmp_num_partial_data = 100000000; //é©å½“ã«ã‚»ãƒƒãƒˆ(å¿…è¦ãªã„ã€‚å¯§ã‚integrate_window_widthè»½ãã—ãŸæ–¹ãŒã‚ˆã•ã’)
+    const int   integrate_window_width  = integration_point;
+    const int   integrate_batch = std::floor(static_cast<float>(tmp_num_partial_data) / integrate_window_width);
+    const int   num_partial_data       = integrate_window_width * integrate_batch;
+    const int   num_partition          = std::floor( static_cast<float>(num_entire_data_pt) / num_partial_data);
+    //ã“ã‚Œå…¥ã‚Œãªã„ã¨æœ€å¾Œã®ãƒ‡ãƒ¼ã‚¿ä¸€éƒ¨ã¨ã°ã—ã¡ã‚ƒã†
+    //const int   skipped_data_size_pts  = num_entire_data_pt - num_partial_data * num_partition;
+    
+    //1ç§’ç©åˆ†ã®ãŸã‚ã«ç”¨æ„
+    float *integrate_re = new float[integrate_batch * num_partition];
+    float *integrate_im = new float[integrate_batch * num_partition];
+    for(int f=0; f<integrate_batch * num_partition; f++){
+        integrate_re[f] = 0;
+        integrate_im[f] = 0;
     }
     
-    //ˆê•bÏ•ª
-    for(j=0; j < integrate_batch ; j++){
-      //‰Šú‰»
-      double re=0.0;
-      double im=0.0;
-      int integrate_first_point = j * integrate_window_width + pos * num_partial_data;
-      
-      for(i=0; i < integrate_window_width; i++)
-      {
-        re+=h_idata[i+integrate_first_point];
-        im+=h_idata[i+integrate_first_point];
-      }
-      integrate_re[j + pos * integrate_batch] = re;
-      integrate_im[j + pos * integrate_batch] = im;
-      //ƒfƒoƒbƒO
-      printf("Intergral re : %lf, im : %lf\n", re , im);
+    //float *h_idata   = new float[num_partial_data];
+    cufftComplex *h_idata   = new cufftComplex[num_partial_data];
+    for(int i=0; i<num_partial_data; i++){
+        h_idata[i].x = 0.0;
+        h_idata[i].y = 0.0;
     }
-
-  } // Next pos		
-	
-	// Save the Integrate as a text file
-	char str[STR_LEN_MAX + 1];
-
-	sprintf (str, "%s.integrate.im", fileinfo.getFileStem().string().c_str());
-	const path output_im_filepath   = dest_dir / str; // Specify the destination directory and avoid depending on the current directory for Gnuplot configuration.
-	FILE *ofp_im = fopen(output_im_filepath.string().c_str(), "w"); if(ofp_im == NULL){throw ta::messageFileOpenError(output_im_filepath.string());}
-	
-	sprintf (str, "%s.integrate.re", fileinfo.getFileStem().string().c_str());
-  const path output_re_filepath   = dest_dir / str; // Specify the destination directory and avoid depending on the current directory for Gnuplot configuration.
-	FILE *ofp_re = fopen(output_re_filepath.string().c_str(), "w"); if(ofp_re == NULL){throw ta::messageFileOpenError(output_re_filepath.string());}
-
-	for(int t=0; t<integrate_batch * num_partition; t++){
-    fprintf(ofp_im,  "%f\n", integrate_im[t]);
-    fprintf(ofp_re,  "%f\n", integrate_re[t]);
-	}
-	
-  fclose(ofp_im);
-	fclose(ofp_re);
-  
-  delete [] h_idata;
-  delete [] integrate_re;
-  delete [] integrate_im;
+    
+    //
+    // MAIN
+    //
+    
+    for (int pos = 0; pos < num_partition; pos++) {
+        const int partial_data_begin_pt = pos * num_partial_data;
+        //hi_dataã®ä½œæˆ        
+        data.load_binary_as_double (fileinfo.getFilePath().string(), num_entire_data_pt, datum_bit_length_B);
+        // ã“ã“ã®å‡¦ç†ã§reã¨imã®ãã‚Œãã‚Œã®å¼·åº¦ã‚’ãƒã‚¤ãƒ³ãƒˆæ¯ã«å…¥ã‚Œã‚‰ã‚Œã‚Œã°è‰¯ã„
+        
+        // Confirm Data For Debug
+        if (pos == 0) {
+            std::ofstream fout_test ( (dest_dir / (fileinfo.getFileStem().string() + ".txt")).string() );
+            for (int i = 0; i < 100; i++) {
+                fout_test << h_idata[i].x << "Â¥t" << h_idata[i].y << "Â¥n";
+            }
+            fout_test.close();
+        }
+        
+        //ä¸€ç§’ç©åˆ†
+        for(int j=0; j < integrate_batch ; j++){
+            //åˆæœŸåŒ–
+            double re=0.0;
+            double im=0.0;
+            int integrate_first_point = j * integrate_window_width + partial_data_begin_pt;
+            
+            //for(int i=0; i < integrate_window_width; i++)
+            for(int i=0; i < integrate_window_width; i++)
+            {
+                re+=h_idata[i+integrate_first_point].x;
+                im+=h_idata[i+integrate_first_point].y;
+            }
+            integrate_re[j + pos * integrate_batch] = re;
+            integrate_im[j + pos * integrate_batch] = im;
+            //ãƒ‡ãƒãƒƒã‚°
+            printf("Intergral re : %lf, im : %lfÂ¥n", re , im);
+        }
+        
+    } // Next pos
+    
+    // Save the Integrate as a text file
+    char str[STR_LEN_MAX + 1];
+    
+    sprintf (str, "%s.integrate.im", fileinfo.getFileStem().string().c_str());
+    const path output_im_filepath   = dest_dir / str; // Specify the destination directory and avoid depending on the current directory for Gnuplot configuration.
+    FILE *ofp_im = fopen(output_im_filepath.string().c_str(), "w"); if(ofp_im == NULL){throw ta::messageFileOpenError(output_im_filepath.string());}
+    
+    sprintf (str, "%s.integrate.re", fileinfo.getFileStem().string().c_str());
+    const path output_re_filepath   = dest_dir / str; // Specify the destination directory and avoid depending on the current directory for Gnuplot configuration.
+    FILE *ofp_re = fopen(output_re_filepath.string().c_str(), "w"); if(ofp_re == NULL){throw ta::messageFileOpenError(output_re_filepath.string());}
+    
+    for(int t=0; t<integrate_batch * num_partition; t++){
+        fprintf(ofp_im,  "%fÂ¥n", integrate_im[t]);
+        fprintf(ofp_re,  "%fÂ¥n", integrate_re[t]);
+    }
+    
+    fclose(ofp_im);
+    fclose(ofp_re);
+    
+    delete [] h_idata;
+    delete [] integrate_re;
+    delete [] integrate_im;
 }
