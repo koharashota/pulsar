@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
  integration_point 何ポイントの合計値を取るか(一秒積分なら1/50^[-9]なので20000000ポイント)
  data バイナリから読み取ったデータ配列をもらう。スペクトルの大きさの配列を受け取りたい(ta::BinData data.load_binary_as_doubleでよんだデータ)
  num_entire_data_pt データの全ポイント数
+ datum_bit_length_B 受け取ろう
  tmp_num_partial_data 分割データのポイント数(いらないかも、てかいらなそう)
  fileinfo fileのパス情報とか受け取る
  config configの読み取り
