@@ -1,0 +1,75 @@
+﻿2014/11/11 10:49:51 にビルドを開始しました。
+     1>ノード 2 上のプロジェクト "C:\Users\USER\Desktop\SpectrumObservation\SpectrumObservation\Project1\Project1.vcxproj" (Rebuild ターゲット)。
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" /Zi /nologo /W3 /WX- /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc110.pdb" /Gd /TP /errorReport:prompt Config.cpp FileInformation.cpp Functions.cpp main.cu
+         main.cu
+     1>main.cu(76): warning C4267: '初期化中' : 'size_t' から 'const int' に変換しました。データが失われているかもしれません。
+     1>main.cu(96): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+     1>main.cu(97): warning C4244: '初期化中' : 'float' から 'const int' への変換です。データが失われる可能性があります。
+     1>main.cu(108): warning C4244: '初期化中' : 'float' から 'const int' への変換です。データが失われる可能性があります。
+     1>main.cu(207): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>main.cu(208): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>main.cu(235): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+     1>main.cu(240): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>main.cu(248): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>main.cu(249): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>main.cu(252): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+     1>main.cu(276): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>main.cu(277): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>main.cu(280): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>main.cu(281): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>main.cu(342): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>main.cu(351): warning C4267: '=' : 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+     1>main.cu(352): warning C4267: '=' : 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+     1>main.cu(367): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>main.cu(376): warning C4267: '=' : 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+     1>main.cu(424): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+         Functions.cpp
+     1>Functions.cpp(268): warning C4244: '初期化中' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Functions.cpp(269): warning C4244: '初期化中' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Functions.cpp(353): warning C4244: '初期化中' : 'double' から 'const int' への変換です。データが失われる可能性があります。
+     1>Functions.cpp(390): warning C4244: '引数' : 'double' から 'int' への変換です。データが失われる可能性があります。
+     1>Functions.cpp(765): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\time.inl(112) : 'localtime' の宣言を確認してください。
+     1>Functions.cpp(773): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>Functions.cpp(844): warning C4244: '初期化中' : 'double' から 'int' への変換です。データが失われる可能性があります。
+     1>Functions.cpp(981): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>Functions.cpp(986): warning C4244: '初期化中' : 'double' から 'int' への変換です。データが失われる可能性があります。
+     1>Functions.cpp(998): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>Functions.cpp(1012): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+         FileInformation.cpp
+     1>FileInformation.cpp(20): warning C4267: '初期化中' : 'size_t' から 'const int' に変換しました。データが失われているかもしれません。
+         Config.cpp
+     1>Config.cpp(52): warning C4267: '初期化中' : 'size_t' から 'const int' に変換しました。データが失われているかもしれません。
+     1>Config.cpp(71): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Config.cpp(79): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Config.cpp(86): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Config.cpp(101): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Config.cpp(109): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Config.cpp(116): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>Config.cpp(131): warning C4267: '初期化中' : 'size_t' から 'const int' に変換しました。データが失われているかもしれません。
+         コードを生成中...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\USER\Desktop\SpectrumObservation\SpectrumObservation\x64\Debug\SpectrumObservation.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\lib\x64" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\USER\Desktop\SpectrumObservation\SpectrumObservation\x64\Debug\SpectrumObservation.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\USER\Desktop\SpectrumObservation\SpectrumObservation\x64\Debug\SpectrumObservation.lib" /MACHINE:X64 x64\Debug\Config.obj
+         x64\Debug\FileInformation.obj
+         x64\Debug\Functions.obj
+         x64\Debug\main.obj
+         Project1.vcxproj -> C:\Users\USER\Desktop\SpectrumObservation\SpectrumObservation\x64\Debug\SpectrumObservation.exe
+     1>プロジェクト "C:\Users\USER\Desktop\SpectrumObservation\SpectrumObservation\Project1\Project1.vcxproj" (Rebuild ターゲット) のビルドが完了しました。
+
+ビルドに成功しました。
+
+経過時間 00:00:19.05

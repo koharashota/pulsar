@@ -1,0 +1,43 @@
+﻿2014/10/25 14:48:25 にビルドを開始しました。
+     1>ノード 2 上のプロジェクト "C:\Users\T\Desktop\SpectrumObservation\Project1\Project1.vcxproj" (Build ターゲット)。
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt main.cu
+         main.cu
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(96): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(97): warning C4244: '初期化中' : 'float' から 'const int' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(108): warning C4244: '初期化中' : 'float' から 'const int' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(207): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(208): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(235): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(240): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(248): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(249): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(252): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(276): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(277): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(280): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(281): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(342): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(367): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+     1>c:\users\t\desktop\spectrumobservation\project1\main.cu(424): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 11.0\vc\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\T\Desktop\SpectrumObservation\Debug\SpectrumObservation.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\lib\Win32" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\T\Desktop\SpectrumObservation\Debug\SpectrumObservation.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\T\Desktop\SpectrumObservation\Debug\SpectrumObservation.lib" /MACHINE:X86 Debug\Config.obj
+         Debug\FileInformation.obj
+         Debug\Functions.obj
+         Debug\main.obj
+         LINK : 前回のインクリメンタル リンクで C:\Users\T\Desktop\SpectrumObservation\Debug\SpectrumObservation.exe が見つからなかったか、ビルドされませんでした。フル リンクを行います。
+     1>LINK : fatal error LNK1104: ファイル 'libboost_filesystem-vc110-mt-gd-1_54.lib' を開くことができません。
+     1>プロジェクト "C:\Users\T\Desktop\SpectrumObservation\Project1\Project1.vcxproj" (Build ターゲット) のビルドが終了しました -- 失敗。
+
+ビルドに失敗しました。
+
+経過時間 00:00:07.01

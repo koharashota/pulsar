@@ -1,0 +1,56 @@
+﻿  Config.cpp
+Config.cpp(71): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+Config.cpp(79): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+Config.cpp(86): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+Config.cpp(101): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+Config.cpp(109): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+Config.cpp(116): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+  FileInformation.cpp
+FileInformation.cpp(29): warning C4244: '=' : 'uintmax_t' から 'size_t' への変換です。データが失われる可能性があります。
+  Functions.cpp
+Functions.cpp(268): warning C4244: '初期化中' : 'double' から 'float' への変換です。データが失われる可能性があります。
+Functions.cpp(269): warning C4244: '初期化中' : 'double' から 'float' への変換です。データが失われる可能性があります。
+Functions.cpp(353): warning C4244: '初期化中' : 'double' から 'const int' への変換です。データが失われる可能性があります。
+Functions.cpp(390): warning C4244: '引数' : 'double' から 'int' への変換です。データが失われる可能性があります。
+Functions.cpp(765): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\time.inl(112) : 'localtime' の宣言を確認してください。
+Functions.cpp(773): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+Functions.cpp(844): warning C4244: '初期化中' : 'double' から 'int' への変換です。データが失われる可能性があります。
+Functions.cpp(981): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+Functions.cpp(986): warning C4244: '初期化中' : 'double' から 'int' への変換です。データが失われる可能性があります。
+Functions.cpp(998): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+Functions.cpp(1012): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+  main.cu
+main.cu(96): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+main.cu(97): warning C4244: '初期化中' : 'float' から 'const int' への変換です。データが失われる可能性があります。
+main.cu(108): warning C4244: '初期化中' : 'float' から 'const int' への変換です。データが失われる可能性があります。
+main.cu(197): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+main.cu(198): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+main.cu(225): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+main.cu(230): warning C4244: '=' : 'double' から 'float' への変換です。データが失われる可能性があります。
+main.cu(238): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+main.cu(239): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+main.cu(242): warning C4244: '初期化中' : 'double' から 'const float' への変換です。データが失われる可能性があります。
+main.cu(266): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+main.cu(267): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(357) : 'sprintf' の宣言を確認してください。
+main.cu(270): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+main.cu(271): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+main.cu(332): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+main.cu(357): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+main.cu(414): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\stdio.h(218) : 'fopen' の宣言を確認してください。
+  コード生成しています。
+  コード生成が終了しました。
+  Project1.vcxproj -> C:\Users\T\Desktop\SpectrumObservation\Release\SpectrumObservation.exe

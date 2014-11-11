@@ -1,0 +1,171 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cuda.h>
+#include <cufft.h>
+#include <cuda_runtime.h>
+
+#define CL
+#ifdef CL
+#include <Windows.h>
+#endif
+
+#define MAX_PATH_SIZE 1024
+#define MAX_DATA_SIZE 1000000
+#define N 256
+#define BATCH 15
+
+#define INPUT_FILE_NAME "sine.dat"
+#define SPECTROGRAM_FILE "spectrogram.3d"
+
+#ifdef CL
+#define PLOT "pgnuplot -persist"
+#elif defined(GCC)
+#define PLOT "gnuplot -persist"
+#endif
+
+#pragma comment(lib, "cudart")
+#pragma comment(lib, "cufft")
+
+using std::cout;
+using std::endl;
+using std::ifstream;
+using std::string;
+
+int init_gnuplot(const char *input_file_name);
+void strchg(char *buf, const char *str1, const char *str2);
+
+int main(int argc, char *argv[])
+{
+	try{
+		// Print Current Directory
+		char pwd[MAX_PATH_SIZE];
+#ifdef CL
+		GetCurrentDirectory(MAX_PATH_SIZE, pwd);
+		strchg(pwd, "\\", "/");
+#endif
+		cout << "Current directory: " << pwd << endl;
+
+		// Load Data File
+		string input_file_path = pwd + string("/") + string(INPUT_FILE_NAME);
+		printf("Input file: %s\n", input_file_path.c_str());
+		ifstream fin(input_file_path); if(!fin){throw "File Open Error";}
+		float *idata = new float[MAX_DATA_SIZE];
+		float tmp_idata;
+		int tmp_datnum=0;
+		while( !fin.eof() ){
+			fin >> tmp_idata;
+			if(tmp_datnum > MAX_DATA_SIZE){throw "Data Size Over";}
+			idata[tmp_datnum] = tmp_idata;
+			tmp_datnum++;
+		}
+		fin.close();
+		const int datnum = tmp_datnum;
+		printf("Number of the data points: %d\n", datnum);
+
+		// Create Input data on CPU
+		// h_idata = input data on host CPU
+		cufftComplex *h_idata = new cufftComplex[N*BATCH];
+		for(int i=0; i<N*BATCH; i++){
+
+			if(i < datnum){
+				h_idata[i].x = idata[i];
+			}else{
+				h_idata[i].x = 0;
+			}
+
+			h_idata[i].y = 0;
+		}
+
+		// Transfer data from CPU to GPU
+		// d_idata = input data on device GPU
+		printf("Transfer data from CPU to GPU\n");
+		cufftComplex *d_idata;
+		cudaMalloc( (void**)&d_idata, sizeof(cufftComplex)*N*BATCH );
+		cudaMemcpy(d_idata, h_idata, sizeof(cufftComplex)*N*BATCH, cudaMemcpyHostToDevice);
+		printf("Transferring Complete.\n");
+		
+		// Create FFT plan
+		cufftHandle plan;
+		cufftPlan1d(&plan, N, CUFFT_C2C, BATCH);
+
+		// Execute FFT
+		printf("Execute FFT\n");
+		cufftExecC2C(plan, d_idata, d_idata, CUFFT_FORWARD);
+		printf("FFT Complete.\n");
+
+		// Transfer data from GPU to CPU 
+		printf("Transfer data from GPU to CPU\n");
+		cudaMemcpy(h_idata, d_idata, sizeof(cufftComplex)*N*BATCH , cudaMemcpyDeviceToHost);
+		printf("Transferring Complete.\n");
+
+		// Erase data on GPU
+		cudaFree(d_idata);
+		cufftDestroy(plan);
+		
+		// Get & Save power spectrum
+		printf("Save Spectrogram\n");
+		float psd[BATCH][N];
+		FILE *ofp;
+		string output_file_path = pwd + string("/") + string(SPECTROGRAM_FILE);
+		printf("Output file: %s\n", output_file_path.c_str());
+		ofp = fopen(output_file_path.c_str(), "w");
+		int index = 0;
+		for(int t=0; t<BATCH; t++){
+			for(int f=0; f<N; f++){
+				psd[t][f] = h_idata[index].x * h_idata[index].x + h_idata[index].y * h_idata[index].y;
+				fprintf(ofp, "%d\t%d\t%f\n", t, f, psd[t][f]);
+				index++;
+			}
+			fprintf(ofp, "\n\n");
+		}
+		fclose(ofp);
+		printf("Save Complete.\n");
+
+		// Make graph
+		printf("Make graph\n");
+		init_gnuplot(output_file_path.c_str());
+
+		// Delete
+		delete [] idata;
+		delete [] h_idata;
+
+		return 0;
+
+	}catch(const char *err){
+		cout << err << endl;
+		return 1;
+	}
+}
+
+int init_gnuplot(const char *input_file_name)
+{
+	FILE *pgnuplot;	
+	pgnuplot = _popen(PLOT, "w");
+	fprintf(pgnuplot, "set xrange[0:%d]\n", BATCH);
+	fprintf(pgnuplot, "set yrange[0:%d]\n", N);
+	fprintf(pgnuplot, "set xlabel \"time index\"\n");
+	fprintf(pgnuplot, "set ylabel \"frequency index\"\n");
+	fprintf(pgnuplot, "set pm3d \n");
+//	fprintf(pgnuplot, "set palette rgbformulae 30,31,32\n");
+	fprintf(pgnuplot, "splot \"%s\" using 1:2:3 with lines \n", input_file_name);
+	_pclose(pgnuplot);
+	return 0;
+}
+
+void strchg(char *buf, const char *str1, const char *str2)
+{
+  // Copy from http://www.grapecity.com/tools/support/powernews/column/clang/049/page03.htm
+  char tmp[MAX_PATH_SIZE + 1];
+  char *p;
+
+  while ((p = strstr(buf, str1)) != NULL) {
+      /* 見つからなくなるまで繰り返す
+            pは旧文字列の先頭を指している */
+    *p = '\0'; /* 元の文字列を旧文字列の直前で区切って */
+    p += strlen(str1);  /* ポインタを旧文字列の次の文字へ */
+    strcpy(tmp, p);             /* 旧文字列から後を保存 */
+    strcat(buf, str2);  /* 新文字列をその後につなぎ */
+    strcat(buf, tmp);   /* さらに残りをつなぐ */
+  }
+}
