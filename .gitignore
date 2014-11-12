@@ -5,3 +5,7 @@ assets/SpectrumObservation/Project1/x64/Debug/*
 assets/SpectrumObservation/Project1/x64/Release/*
 assets/SpectrumObservation/x64/*
 assets/SpectrumObservation/Project1/x64/Debug/*
+*.sdf
+*.tlog
+*.pdb
+*.idb
