@@ -2,7 +2,7 @@
 
 #define BUF_LEN_MAX 2048
 
-namespace Aoki
+namespace ta
 {
 	// Constructor
 	FileInformation::FileInformation(){

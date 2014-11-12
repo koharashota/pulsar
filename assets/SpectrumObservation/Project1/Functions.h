@@ -1,12 +1,14 @@
-#ifndef AOKI_FUNCTIONS
-#define AOKI_FUNCTIONS
+#ifndef TA_FUNCTIONS
+#define TA_FUNCTIONS
 
-#include <math.h>
-#include <time.h>
+#include <cmath>
+#include <ctime>
 #include <string>
+#include <iostream>
+#include <fstream>
 //#include <gsl/gsl_matrix.h>
 
-namespace Aoki
+namespace ta
 {
 	/* 円周率 */
 	static const double pi     = 6.0 * std::asin(0.5);
@@ -43,6 +45,7 @@ namespace Aoki
 	//void create_spectrogram(const float *dft_re, const float *dft_im, const int 
 
 	/* 統計 */
+	float  summation (const float *data, const int num_data);
 	float  minimum(const float *data, const int num_data);
 	double mean(const double *data, const int data_num);
 	float  mean(const float  *data, const int data_num);
@@ -93,14 +96,15 @@ namespace Aoki
 
 	/* 入出力 */
 	size_t read_stdin(char * str, const size_t STRLENMAX);
-	int confirm_on_stdin();
-	int saveSpectrumOfComplexData(const std::string filename, const float *data, const int data_length);
-	int saveData1D(const std::string filename, const float *data, const int data_length);
-	int saveDataForGnuplot3D(const std::string filename, float **data, const int x_length, const float x_unit, const int y_length, const float y_unit);
+	bool stdin_yes_or_no();
+	int saveSpectrumOfComplexData (const char *filename, const float *data, const int data_length);
+	int saveData1D (const char *filename, const float *data, const int data_length);
+	int saveData2D (const char *filename, const float *data, const int data_length, const float x_resolution);
+	int saveDataForGnuplot3D (const char *filename, float **data, const int x_length, const float x_unit, const int y_length, const float y_unit);
 
 	/* メッセージ生成 */
 	std::string messageFileOpenError(const std::string filename);
-	
+	void print_elapse (std::string str, clock_t start_time, clock_t end_time);
 
 }
 #endif

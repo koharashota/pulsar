@@ -1,6 +1,6 @@
 #include "Functions.h"
 
-namespace Aoki
+namespace ta
 {
 	//------------------------------------------------------------------------------
 	// 整数 N のビットを逆転させた整数 brN を求めるプログラム
@@ -578,6 +578,18 @@ namespace Aoki
 		}
 	}
 
+	/*
+	*  Summation
+	*/
+	float summation (const float *data, const int num_data)
+	{
+		float sum = 0;
+		for (int i=0; i<num_data; i++) {
+			sum += data[i];
+		}
+		return sum;
+	}
+
 	/**
 	* Derive the minimum of data.
 	*/
@@ -955,11 +967,17 @@ namespace Aoki
 		return strlength;
 	}	
 
-	int confirm_on_stdin()
+	bool stdin_yes_or_no()
 	{
-		//printf("\nInitiate Process? [y/n]: ");
+		printf(" [y/n]: ");
 		int c = getchar();
-		int confirm = 0;
+		bool confirm = false;
+		if (c == 'y') {
+			confirm = true;
+		} else {
+			confirm = false;
+		}
+		/*
 		if(c == 'y'){
 			confirm = 1;
 		}else if(c == 'n'){
@@ -967,6 +985,7 @@ namespace Aoki
 		}else{
 			confirm = -1;
 		}
+		*/
 		// Throw residue on stdin
 		while((c = getchar()) != EOF){
 			if(c == '\n'){
@@ -976,40 +995,46 @@ namespace Aoki
 		return confirm;
 	}
 
-	int saveSpectrumOfComplexData(const std::string filename, const float *data, const int data_length)
+	int saveSpectrumOfComplexData (const char *filename, const float *data, const int data_length)
 	{
-		FILE *ofp = fopen(filename.c_str(), "w");
-		if(ofp == NULL){
-			fprintf(stderr, "%s\n", messageFileOpenError(filename).c_str());
-			return -1;
+		std::ofstream fout (filename);
+		const int positive_region = std::floor (data_length / 2.0);
+		for (int f = 1 + positive_region; f < data_length; f++) {
+			fout << f - data_length << "\t" << data[f] << "\n";
 		}
-		for(int f = 1 + std::floor(data_length / 2.0); f < data_length; f++){
-			fprintf(ofp, "%d\t%f\n", f - data_length, data[f]);
+		for (int f = 0; f <= positive_region; f++) {
+			fout << f << "\t" << data[f] << "\n";
 		}
-		for(int f = 0; f <= std::floor(data_length / 2.0); f++){
-			fprintf(ofp, "%d\t%f\n", f, data[f]);
-		}
-		fclose(ofp);
+		fout.close();
+		std::cout << "Output: " << filename << std::endl;
 		return 0;
 	}
 
-	int saveData1D(const std::string filename, const float *data, const int data_length)
+	int saveData1D (const char *filename, const float *data, const int data_length)
 	{
-		FILE *ofp = fopen(filename.c_str(), "w");
-		if(ofp == NULL){
-			fprintf(stderr, "%s\n", messageFileOpenError(filename).c_str());
-			return -1;
-		}
+		std::ofstream fout (filename);
 		for(int i = 0; i < data_length; i++){
-			fprintf(ofp, "%f\n", data[i]);
+			fout << data[i] << "\n";
 		}
-		fclose(ofp);
+		fout.close();
+		std::cout << "Output: " << filename << std::endl;
 		return 0;
 	}
 
-	int saveDataForGnuplot3D(const std::string filename, float **data, const int x_length, const float x_unit, const int y_length, const float y_unit)
+	int saveData2D (const char *filename, const float *data, const int data_length, const float x_resolution)
 	{
-		FILE *ofp = fopen(filename.c_str(), "w");
+		std::ofstream fout (filename);
+		for (int i = 0; i < data_length; i++) {
+			fout << i * x_resolution << "\t" << data[i] << "\n";
+		}
+		fout.close();
+		std::cout << "Output: " << filename << std::endl;
+		return 0;
+	}
+
+	int saveDataForGnuplot3D(const char *filename, float **data, const int x_length, const float x_unit, const int y_length, const float y_unit)
+	{
+		FILE *ofp = fopen(filename, "w");
 		if(ofp == NULL){
 			fprintf(stderr, "%s\n", messageFileOpenError(filename));
 			return -1;
@@ -1031,7 +1056,11 @@ namespace Aoki
 		return "File Open Error: " + filename;
 	}
 
-
+	void print_elapse (std::string str, clock_t start_time, const clock_t end_time)
+	{
+		printf("%s: %.2f s\n", str.c_str(), (double)(end_time - start_time)/CLOCKS_PER_SEC);
+		return;
+	}
 
 
 

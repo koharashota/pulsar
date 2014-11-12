@@ -6,16 +6,16 @@
 	printf("Input: %s\n", fileinfo.getFilepath().string().c_str());
 */
 
-#ifndef FILEINFORMATION
-#define FILEINFORMATION
+#ifndef TA_FILEINFORMATION
+#define TA_FILEINFORMATION
 
-#include <time.h>
+#include <ctime>
 #include <string>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
 
-namespace Aoki
+namespace ta
 {
 	class FileInformation
 	{
@@ -31,11 +31,11 @@ namespace Aoki
 			FileInformation(const char *file, const char delimiter);
 			~FileInformation();
 			
-			fs::path getFilePath()         {return filepath;}
+			fs::path getFilePath()       {return filepath;}
 			fs::path getOutputDestinationDirectory(){return output_destination_directory;}
-			fs::path getFileStem()      {return filestem;}
-			fs::path getFileStemSubstr(){return filestem_substr;}
-			size_t getFilesize_B()         {return filesize_B;}
+			fs::path getFileStem()       {return filestem;}
+			fs::path getFileStemSubstr() {return filestem_substr;}
+			size_t   getFilesize_B()     {return filesize_B;}
 			
 
 		

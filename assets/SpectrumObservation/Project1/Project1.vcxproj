@@ -136,15 +136,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BinData.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="FileInformation.cpp" />
     <ClCompile Include="Functions.cpp" />
     <ClCompile Include="main.cu" />
+    <ClCompile Include="Stats.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BinData.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="FileInformation.h" />
     <ClInclude Include="Functions.h" />
+    <ClInclude Include="Stats.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="config.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
